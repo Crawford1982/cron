@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — CronBuilder.dev</title>
+<meta name="description" content="Privacy policy for CronBuilder.dev. We use Google Analytics for usage statistics. Your cron expressions and usage stay in your browser.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://cronbuilder.dev/privacy.html">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:       #0a0b0d;
+    --surface:  #111318;
+    --surface2: #181c23;
+    --border:   #22283a;
+    --text:     #cdd6f4;
+    --muted:    #585f7e;
+    --dim:      #3d4461;
+    --green:    #a6e3a1;
+    --blue:     #89b4fa;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui:   'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .topbar-title { font-family: var(--font-ui); font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-left: 8px; letter-spacing: 0.05em; }
+  .topbar-title span { color: var(--text); }
+  .topbar-title a { color: var(--muted); text-decoration: none; }
+  .topbar-title a:hover { color: var(--text); }
+  .topbar-badge { margin-left: auto; font-size: 0.7rem; color: var(--green); border: 1px solid var(--green); border-radius: 4px; padding: 2px 8px; opacity: 0.7; }
+
+  .main { max-width: 700px; margin: 0 auto; padding: 48px 24px 80px; position: relative; z-index: 1; }
+  .main h1 { font-family: var(--font-ui); font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .main .updated { font-size: 0.8rem; color: var(--dim); margin-bottom: 32px; }
+  .main h2 { font-family: var(--font-ui); font-size: 1.1rem; font-weight: 600; color: var(--text); margin: 28px 0 10px; }
+  .main p { color: var(--muted); font-size: 0.9rem; line-height: 1.8; margin-bottom: 12px; }
+  .main ul { color: var(--muted); font-size: 0.9rem; line-height: 1.9; margin: 8px 0 16px 24px; }
+  .main a { color: var(--blue); text-decoration: none; }
+  .main a:hover { text-decoration: underline; }
+  .main code { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 0.85em; color: var(--green); }
+  .main .highlight { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 18px; margin: 16px 0; font-size: 0.85rem; color: var(--text); }
+
+  footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 0.72rem; color: var(--dim); }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--text); }
+
+  .consent-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; z-index: 1000; font-size: 0.82rem; }
+  .consent-banner.hidden { display: none; }
+  .consent-text { color: var(--muted); flex: 1; min-width: 200px; }
+  .consent-text a { color: var(--blue); text-decoration: none; }
+  .consent-btns { display: flex; gap: 10px; }
+  .consent-btn { font-family: var(--font-mono); font-size: 0.78rem; padding: 8px 16px; border-radius: 6px; cursor: pointer; border: 1px solid; }
+  .consent-btn.accept { background: var(--green); color: #000; border-color: var(--green); }
+  .consent-btn.decline { background: transparent; color: var(--muted); border-color: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="dots">
+    <div class="dot dot-r"></div>
+    <div class="dot dot-y"></div>
+    <div class="dot dot-g"></div>
+  </div>
+  <div class="topbar-title"><a href="/">cron</a> — <span>privacy policy</span></div>
+  <div class="topbar-badge">● free · no login</div>
+</div>
+
+<div class="main">
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: March 2025</p>
+
+  <div class="highlight">
+    <strong>In short:</strong> We don’t require an account. The cron expressions you type and the “recent expressions” list stay only in your browser. We use Google Analytics to understand how the site is used (e.g. page views). We may add ads later; if we do, we’ll say so here.
+  </div>
+
+  <h2>1. What we collect</h2>
+  <p><strong>Google Analytics.</strong> We use Google Analytics to see how many people visit the site, which pages they open, and basic usage patterns (e.g. device type, country). This helps us improve the tool. Google may set cookies and collect data as described in their <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a> and <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer">how they use data on sites that use their services</a>.</p>
+  <p>We do <strong>not</strong> send your cron expressions, natural-language input, or “recent expressions” history to our servers or to Google. All of that is processed and stored only in your browser (including sessionStorage for recent expressions).</p>
+
+  <h2>2. Cookies and local storage</h2>
+  <p><strong>Cookies.</strong> Google Analytics may set cookies (e.g. <code>_ga</code>, <code>_gid</code>) to distinguish users and sessions. We don’t set any other cookies ourselves.</p>
+  <p><strong>Local storage.</strong> We use the browser’s <code>sessionStorage</code> only to keep your “recent expressions” list so you can click to restore them. That data stays on your device and is not sent to us.</p>
+
+  <h2>3. Future advertising</h2>
+  <p>We may add advertising on this site in the future (e.g. through Google AdSense or similar). If we do:</p>
+  <ul>
+    <li>Ad providers may set their own cookies and use data to show relevant ads.</li>
+    <li>We will update this page to name the provider(s) and link to their privacy and ad settings.</li>
+  </ul>
+
+  <h2>4. Your choices</h2>
+  <ul>
+    <li><strong>Google Analytics:</strong> You can opt out using the <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Google Analytics Opt-out Browser Add-on</a>, or use a browser or extension that blocks analytics scripts.</li>
+    <li><strong>Recent expressions:</strong> Use “clear all” in the Recent expressions section on the main page, or clear your browser’s data for this site; that removes the list.</li>
+  </ul>
+
+  <h2>5. Third parties</h2>
+  <p>Aside from Google (Analytics, and possibly future ad services), we don’t use other third-party services that collect personal data on this site. Links to external sites (e.g. Render, Railway, cron-job.org) in our “Need to run cron jobs” section have their own privacy policies.</p>
+
+  <h2>6. Data retention</h2>
+  <p>We don’t store your cron expressions or usage on our servers. Analytics data is held by Google according to your <a href="https://support.google.com/analytics/answer/7667196" target="_blank" rel="noopener noreferrer">Analytics data retention settings</a> and their policies.</p>
+
+  <h2>7. Children’s privacy</h2>
+  <p>This site is a technical tool aimed at developers. We don’t knowingly collect personal data from children. If you believe a child has submitted personal data here, contact us and we’ll remove it.</p>
+
+  <h2>8. Changes to this policy</h2>
+  <p>We may update this page when we add features (e.g. ads) or change practices. The “Last updated” date at the top will change. Continued use of the site after an update means you accept the revised policy.</p>
+
+  <h2>9. Contact</h2>
+  <p>For privacy-related questions or requests, you can reach us at the contact method published on this site (e.g. a contact form or email linked from the homepage or footer when available).</p>
+</div>
+
+<footer>
+  <a href="/">Home</a> &nbsp;·&nbsp;
+  <a href="/blog/">Blog</a> &nbsp;·&nbsp;
+  <a href="/privacy.html">Privacy Policy</a> &nbsp;·&nbsp;
+  <a href="/sitemap.xml">Sitemap</a> &nbsp;·&nbsp;
+  Free tool · No login · Data in your browser
+</footer>
+
+<div id="consentBanner" class="consent-banner" role="dialog" aria-label="Analytics consent">
+  <p class="consent-text">We use Google Analytics to improve the site. You can accept or decline. <a href="/privacy.html">Privacy policy</a></p>
+  <div class="consent-btns">
+    <button type="button" class="consent-btn accept" id="consentAccept">Accept</button>
+    <button type="button" class="consent-btn decline" id="consentDecline">Decline</button>
+  </div>
+</div>
+<script>
+(function(){var k='cronbuilder_analytics',id='G-5RNVMHRHLH';
+function load(){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config',id);var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(s);}
+function set(v){try{localStorage.setItem(k,v);}catch(e){}var b=document.getElementById('consentBanner');if(b)b.classList.add('hidden');if(v==='accepted')load();}
+var b=document.getElementById('consentBanner'),a=document.getElementById('consentAccept'),d=document.getElementById('consentDecline');
+if(!b)return;try{var c=localStorage.getItem(k);if(c==='accepted'){load();b.classList.add('hidden');return;}if(c==='declined'){b.classList.add('hidden');return;}}catch(e){}
+if(a)a.onclick=function(){set('accepted');};if(d)d.onclick=function(){set('declined');};})();
+</script>
+
+</body>
+</html>

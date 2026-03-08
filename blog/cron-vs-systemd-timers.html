@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cron vs systemd Timers: Which Should You Use in 2026? | CronBuilder.dev</title>
+<meta name="description" content="systemd timers have mostly replaced cron on modern Linux. Here's when to use each, how systemd timer syntax compares to cron, and which is better for your use case.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://cronbuilder.dev/blog/cron-vs-systemd-timers.html">
+<meta property="og:title" content="Cron vs systemd Timers: Which Should You Use in 2026?">
+<meta property="og:description" content="Cron is simple. systemd timers are powerful. Here's the honest comparison — syntax, logging, dependencies, and when to use each.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://cronbuilder.dev/blog/cron-vs-systemd-timers.html">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Cron vs systemd Timers: Which Should You Use in 2026?",
+  "description": "A practical comparison of cron and systemd timers covering syntax, logging, dependencies, and when each is the better tool.",
+  "author": { "@type": "Organization", "name": "CronBuilder.dev" },
+  "publisher": { "@type": "Organization", "name": "CronBuilder.dev", "url": "https://cronbuilder.dev" },
+  "datePublished": "2026-03-08",
+  "dateModified": "2026-03-08",
+  "mainEntityOfPage": "https://cronbuilder.dev/blog/cron-vs-systemd-timers.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Should I use cron or systemd timers?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Use cron for simple, single-command schedules where you want minimal setup. Use systemd timers when you need better logging (journald integration), dependency control (run after network is up), or the ability to catch up on missed runs. For most new Linux services, systemd timers are the better default." }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the systemd equivalent of a cron expression?",
+      "acceptedAnswer": { "@type": "Answer", "text": "systemd uses OnCalendar= in the [Timer] section. The format is different from cron: 'Mon..Fri *-*-* 09:00:00' is the equivalent of '0 9 * * 1-5'. systemd also supports OnBootSec= for boot-relative timing and OnUnitActiveSec= for intervals." }
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0d; --surface: #111318; --surface2: #181c23;
+    --border: #22283a; --border2: #2d3550;
+    --text: #cdd6f4; --muted: #7a8299;
+    --green: #a6e3a1; --yellow: #f9e2af; --blue: #89b4fa;
+    --teal: #94e2d5; --red: #f38ba8; --mauve: #cba6f7; --peach: #fab387;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.8; }
+
+  nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 48px; display: flex; align-items: center; gap: 24px; position: sticky; top: 0; z-index: 100; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.82rem; font-family: var(--font-mono); transition: color 0.15s; }
+  nav a:hover, nav a.active { color: var(--green); }
+  nav .nav-logo { font-family: var(--font-ui); font-weight: 700; color: var(--text); font-size: 0.9rem; margin-right: auto; }
+
+  .page { max-width: 740px; margin: 0 auto; padding: 56px 24px 80px; }
+  .breadcrumb { font-size: 0.78rem; color: var(--muted); margin-bottom: 28px; font-family: var(--font-mono); }
+  .breadcrumb a { color: var(--muted); text-decoration: none; }
+  .article-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--teal); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 14px; }
+  h1 { font-family: var(--font-ui); font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; color: #fff; margin-bottom: 16px; }
+  .article-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 40px; display: flex; gap: 16px; flex-wrap: wrap; }
+
+  p { margin-bottom: 20px; color: #b0b8d4; }
+  h2 { font-family: var(--font-ui); font-size: 1.3rem; font-weight: 700; color: #fff; margin: 44px 0 14px; letter-spacing: -0.01em; }
+  h3 { font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--text); margin: 24px 0 8px; }
+  strong { color: var(--text); font-weight: 500; }
+  a { color: var(--blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+  a:hover { border-bottom-color: var(--blue); }
+  ul, ol { padding-left: 22px; margin-bottom: 20px; color: #b0b8d4; }
+  li { margin-bottom: 8px; }
+
+  code { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; color: var(--yellow); font-family: var(--font-mono); font-size: 0.84em; padding: 2px 7px; }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin: 16px 0 24px; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; font-size: 0.85rem; line-height: 1.9; color: var(--yellow); display: block; }
+  .comment { color: var(--muted) !important; }
+  .section-header { color: var(--teal) !important; }
+
+  /* COMPARISON TABLE */
+  .compare-table { width: 100%; border-collapse: collapse; margin: 20px 0 32px; font-size: 0.88rem; }
+  .compare-table thead tr { background: var(--surface2); }
+  .compare-table th { padding: 12px 16px; text-align: left; font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--border); font-family: var(--font-mono); }
+  .compare-table td { padding: 11px 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table .th-cron { color: var(--yellow); }
+  .compare-table .th-systemd { color: var(--teal); }
+  .compare-table .win { color: var(--green); font-size: 0.78rem; }
+  .compare-table .lose { color: var(--red); font-size: 0.78rem; }
+  .compare-table .draw { color: var(--muted); font-size: 0.78rem; }
+  .compare-table .feature { color: var(--text); font-weight: 500; font-size: 0.88rem; }
+
+  /* SIDE BY SIDE CODE */
+  .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 28px; }
+  .sbs-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .sbs-label { font-family: var(--font-mono); font-size: 0.65rem; padding: 8px 14px; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 1px solid var(--border); }
+  .sbs-label.cron { color: var(--yellow); background: rgba(249,226,175,0.05); }
+  .sbs-label.systemd { color: var(--teal); background: rgba(148,226,213,0.05); }
+  .sbs-panel pre { margin: 0; border: none; border-radius: 0; }
+
+  .callout { border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; }
+  .callout.green { background: #0d1f11; border-color: var(--green); }
+  .callout.blue { background: #0d1520; border-color: var(--blue); }
+  .callout.yellow { background: #1e1a0d; border-color: var(--yellow); }
+  .callout p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+  .callout strong { color: var(--text); }
+
+  /* VERDICT CARD */
+  .verdict { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; margin: 28px 0; }
+  .verdict-title { font-family: var(--font-mono); font-size: 0.72rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
+  .verdict-row { display: flex; gap: 14px; margin-bottom: 12px; align-items: flex-start; }
+  .verdict-label { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 3px 8px; flex-shrink: 0; white-space: nowrap; }
+  .verdict-text { font-size: 0.88rem; color: #b0b8d4; line-height: 1.6; }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin: 32px 0; }
+  .toc-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .toc ol { padding-left: 18px; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { font-size: 0.87rem; color: var(--blue); text-decoration: none; }
+
+  .cta-box { background: linear-gradient(135deg, #151b2e, #1a2040); border: 1px solid #2d3860; border-radius: 12px; padding: 28px; text-align: center; margin: 48px 0; }
+  .cta-box h3 { font-family: var(--font-ui); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .cta-box p { font-size: 0.88rem; color: var(--muted); margin-bottom: 18px; }
+  .cta-btn { background: var(--green); border: none; border-radius: 8px; color: #000; font-family: var(--font-ui); font-size: 0.92rem; font-weight: 700; padding: 12px 28px; text-decoration: none; display: inline-block; }
+  .cta-btn:hover { opacity: 0.85; border-bottom: none; }
+
+  footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 60px; }
+  footer a { color: var(--muted); text-decoration: none; }
+  .consent-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; z-index: 1000; font-size: 0.82rem; }
+  .consent-banner.hidden { display: none; }
+  .consent-text { color: var(--muted); flex: 1; min-width: 200px; }
+  .consent-text a { color: var(--blue); text-decoration: none; }
+  .consent-btns { display: flex; gap: 10px; }
+  .consent-btn { font-family: var(--font-mono); font-size: 0.78rem; padding: 8px 16px; border-radius: 6px; cursor: pointer; border: 1px solid; }
+  .consent-btn.accept { background: var(--green); color: #000; border-color: var(--green); }
+  .consent-btn.decline { background: transparent; color: var(--muted); border-color: var(--border); }
+  @media (max-width: 580px) { .side-by-side { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://cronbuilder.dev" class="nav-logo">CronBuilder.dev</a>
+  <a href="https://cronbuilder.dev">Tool</a>
+  <a href="https://cronbuilder.dev/blog/" class="active">Blog</a>
+</nav>
+
+<div class="page">
+  <div class="breadcrumb">
+    <a href="https://cronbuilder.dev">Home</a> › <a href="https://cronbuilder.dev/blog/">Blog</a> › Cron vs systemd Timers
+  </div>
+
+  <div class="article-label">// linux · scheduling</div>
+  <h1>Cron vs systemd Timers:<br>Which Should You Use in 2026?</h1>
+  <div class="article-meta">
+    <span>📅 March 2026</span>
+    <span>⏱ 8 min read</span>
+    <span>🏷 Linux · systemd · DevOps</span>
+  </div>
+
+  <p>Cron has been scheduling Linux tasks since 1975. systemd timers arrived around 2010 and are now the default on every major Linux distribution. So which should you actually use?</p>
+
+  <p>The honest answer: <strong>cron is still great for simple tasks</strong>, but systemd timers win on every objective measure for production services. Here's the full comparison.</p>
+
+  <div class="toc">
+    <div class="toc-title">// contents</div>
+    <ol>
+      <li><a href="#comparison">Feature comparison</a></li>
+      <li><a href="#syntax">Syntax side-by-side</a></li>
+      <li><a href="#logging">Logging and observability</a></li>
+      <li><a href="#dependencies">Dependencies and ordering</a></li>
+      <li><a href="#missed">Handling missed runs</a></li>
+      <li><a href="#systemd-setup">Setting up a systemd timer from scratch</a></li>
+      <li><a href="#verdict">When to use each</a></li>
+    </ol>
+  </div>
+
+  <h2 id="comparison">Feature Comparison</h2>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th class="th-cron">Cron</th>
+        <th class="th-systemd">systemd timer</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="feature">Setup complexity</td>
+        <td><span class="win">✓ One line in crontab</span></td>
+        <td><span class="lose">Two files (.timer + .service)</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Logging</td>
+        <td><span class="lose">Email or redirect manually</span></td>
+        <td><span class="win">✓ Full journald integration</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Dependencies</td>
+        <td><span class="lose">None</span></td>
+        <td><span class="win">✓ After=, Requires=, etc.</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Catch up on missed runs</td>
+        <td><span class="lose">✗ Missed runs are lost</span></td>
+        <td><span class="win">✓ Persistent= option</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Run on boot + interval</td>
+        <td><span class="lose">Need @reboot + another line</span></td>
+        <td><span class="win">✓ OnBootSec= + OnUnitActiveSec=</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Randomised delay</td>
+        <td><span class="lose">✗ Not supported</span></td>
+        <td><span class="win">✓ RandomizedDelaySec=</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Security sandboxing</td>
+        <td><span class="lose">Limited</span></td>
+        <td><span class="win">✓ Full systemd sandboxing</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Familiar syntax</td>
+        <td><span class="win">✓ Universally known</span></td>
+        <td><span class="lose">Different syntax to learn</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Per-user scheduling</td>
+        <td><span class="win">✓ crontab -e</span></td>
+        <td><span class="draw">✓ User timers (more complex)</span></td>
+      </tr>
+      <tr>
+        <td class="feature">Works on all Unix systems</td>
+        <td><span class="win">✓ macOS, BSDs, Solaris...</span></td>
+        <td><span class="lose">Linux only</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 id="syntax">Syntax Side-by-Side</h2>
+
+  <p>The same schedule expressed in cron and systemd:</p>
+
+  <h3>"Run every weekday at 9am"</h3>
+  <div class="side-by-side">
+    <div class="sbs-panel">
+      <div class="sbs-label cron">cron</div>
+      <pre><code>0 9 * * 1-5 /path/to/script.sh</code></pre>
+    </div>
+    <div class="sbs-panel">
+      <div class="sbs-label systemd">systemd — mytask.timer</div>
+      <pre><code>[Unit]
+Description=My task timer
+
+[Timer]
+OnCalendar=Mon..Fri *-*-* 09:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target</code></pre>
+    </div>
+  </div>
+
+  <h3>"Run every 5 minutes"</h3>
+  <div class="side-by-side">
+    <div class="sbs-panel">
+      <div class="sbs-label cron">cron</div>
+      <pre><code>*/5 * * * * /path/to/script.sh</code></pre>
+    </div>
+    <div class="sbs-panel">
+      <div class="sbs-label systemd">systemd — mytask.timer</div>
+      <pre><code>[Timer]
+OnBootSec=5min
+OnUnitActiveSec=5min</code></pre>
+    </div>
+  </div>
+
+  <h3>"Run on the 1st of every month"</h3>
+  <div class="side-by-side">
+    <div class="sbs-panel">
+      <div class="sbs-label cron">cron</div>
+      <pre><code>0 0 1 * * /path/to/script.sh</code></pre>
+    </div>
+    <div class="sbs-panel">
+      <div class="sbs-label systemd">systemd — mytask.timer</div>
+      <pre><code>[Timer]
+OnCalendar=*-*-01 00:00:00
+Persistent=true</code></pre>
+    </div>
+  </div>
+
+  <div class="callout blue">
+    <p><strong>Validate cron expressions</strong> before converting them. Paste into <a href="https://cronbuilder.dev">CronBuilder.dev</a> to confirm the schedule is correct — then translate to systemd syntax.</p>
+  </div>
+
+  <h2 id="logging">Logging: systemd Wins Decisively</h2>
+
+  <p>With cron, output handling is your problem. You have to explicitly redirect stdout and stderr to a log file, rotate those logs manually, and grep through them to find what you want.</p>
+
+  <p>systemd timers write all output to journald automatically. You get structured, indexed, rotatable logs with zero configuration:</p>
+
+  <pre><code><span class="comment"># View logs for a specific timer — the last 50 lines</span>
+journalctl -u mytask.service -n 50
+
+<span class="comment"># Follow logs in real time</span>
+journalctl -u mytask.service -f
+
+<span class="comment"># See logs from the last run only</span>
+journalctl -u mytask.service --since "$(systemctl show mytask.service --value -p ExecMainStartTimestamp)"
+
+<span class="comment"># See all timer run history with exit codes</span>
+systemctl status mytask.timer</code></pre>
+
+  <p>With cron, the equivalent requires setting up <code>>> /var/log/mytask.log 2>&1</code>, configuring logrotate, and writing your own grep query. systemd gives you all of this for free.</p>
+
+  <h2 id="dependencies">Dependencies: A Cron Killer Feature</h2>
+
+  <p>One of cron's biggest gaps is that it knows nothing about the state of the system. If you schedule a database backup at 2am and the database service is down, cron runs the script anyway and it fails silently.</p>
+
+  <p>systemd timers can declare dependencies:</p>
+
+  <pre><code><span class="comment"># mytask.service</span>
+[Unit]
+Description=Database backup
+<span class="comment"># Wait for the network and the database to be available</span>
+After=network-online.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=postgres
+ExecStart=/usr/local/bin/backup.sh</code></pre>
+
+  <p>With this configuration, the backup never runs unless PostgreSQL is actually available. If PostgreSQL is down, the timer fires but the service fails immediately with a clear dependency error in the journal — no mystery failures.</p>
+
+  <h2 id="missed">Persistent Timers: Catching Up on Missed Runs</h2>
+
+  <p>Here's a scenario: your server reboots at 1:57am. Your cron job was scheduled for 2:00am. Cron will miss the run because it wasn't running at 2am. There's no mechanism to catch up.</p>
+
+  <p>systemd's <code>Persistent=true</code> option records the last run time and, on the next boot, immediately runs the timer if the scheduled time has passed since the last run:</p>
+
+  <pre><code>[Timer]
+OnCalendar=*-*-* 02:00:00
+<span class="comment"># Run immediately on next boot if the 2am run was missed</span>
+Persistent=true</code></pre>
+
+  <p>This is invaluable for nightly backups, certificate renewal jobs, and any task where missing a run has consequences.</p>
+
+  <h2 id="systemd-setup">Setting Up a systemd Timer from Scratch</h2>
+  <p>A systemd timer requires two files: a <code>.service</code> file that defines what to run, and a <code>.timer</code> file that defines when to run it. Both go in <code>/etc/systemd/system/</code> for system-level jobs, or <code>~/.config/systemd/user/</code> for user-level jobs.</p>
+
+  <h3>Step 1: Create the service unit</h3>
+  <pre><code><span class="comment"># /etc/systemd/system/mybackup.service</span>
+[Unit]
+Description=My backup script
+After=network.target
+
+[Service]
+Type=oneshot
+User=backup-user
+ExecStart=/usr/local/bin/backup.sh
+StandardOutput=journal
+StandardError=journal</code></pre>
+
+  <h3>Step 2: Create the timer unit</h3>
+  <pre><code><span class="comment"># /etc/systemd/system/mybackup.timer</span>
+[Unit]
+Description=Run backup daily at 2am
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+<span class="comment"># Randomise start by up to 1 minute to avoid thundering herd</span>
+RandomizedDelaySec=60
+
+[Install]
+WantedBy=timers.target</code></pre>
+
+  <h3>Step 3: Enable and start the timer</h3>
+  <pre><code><span class="comment"># Reload systemd to pick up the new units</span>
+sudo systemctl daemon-reload
+
+<span class="comment"># Enable and start the timer</span>
+sudo systemctl enable --now mybackup.timer
+
+<span class="comment"># Verify it's running and see the next scheduled run</span>
+systemctl status mybackup.timer
+
+<span class="comment"># List all active timers</span>
+systemctl list-timers</code></pre>
+
+  <h2 id="verdict">When to Use Each</h2>
+
+  <div class="verdict">
+    <div class="verdict-title">// decision guide</div>
+    <div class="verdict-row">
+      <div class="verdict-label">use cron</div>
+      <div class="verdict-text">Quick personal scripts, one-liners, scripts that don't need monitoring, when you need to share configs across macOS/Linux/BSD, or when onboarding developers who don't know systemd.</div>
+    </div>
+    <div class="verdict-row">
+      <div class="verdict-label">use systemd</div>
+      <div class="verdict-text">Production services, anything that needs structured logging, jobs with dependencies on other services (databases, networks), when missed-run recovery matters, or when security sandboxing is required.</div>
+    </div>
+    <div class="verdict-row">
+      <div class="verdict-label">use cron anyway</div>
+      <div class="verdict-text">Legacy systems, containers without systemd (most Docker images don't run systemd — use cron or a process supervisor like supervisord instead), non-Linux systems like macOS or FreeBSD.</div>
+    </div>
+  </div>
+
+  <p>The practical upshot: <strong>new production services on modern Linux should default to systemd timers</strong>. For personal scripts and anything where you need portability or quick setup, cron is still perfectly fine. The two tools coexist happily — you don't have to pick one for everything.</p>
+
+  <p>And wherever you're scheduling, it starts with getting the expression right. The <a href="https://cronbuilder.dev">CronBuilder tool</a> validates cron syntax and shows your next 10 run times — so you can confirm the schedule before you deploy it, regardless of whether you're writing a crontab line or a systemd <code>OnCalendar</code> value.</p>
+
+  <div class="cta-box">
+    <h3>Verify your schedule first</h3>
+    <p>Whether you're writing a cron expression or translating one to systemd OnCalendar format, use CronBuilder.dev to confirm the timing looks right before you deploy.</p>
+    <a class="cta-btn" href="https://cronbuilder.dev">Build & Validate →</a>
+  </div>
+
+  <div class="callout blue" style="margin-top: 40px;">
+    <p><strong>Related:</strong> <a href="cron-job-not-running.html">Cron job not running?</a> — 10 reasons and fixes. <a href="github-actions-cron-schedule.html">GitHub Actions cron schedule</a> — UTC, 5-min minimum, and gotchas.</p>
+  </div>
+
+</div>
+
+<footer>
+  <a href="https://cronbuilder.dev">CronBuilder.dev</a> · Free cron expression builder and explainer ·
+  <a href="https://cronbuilder.dev/blog/">More articles</a>
+</footer>
+
+<div id="consentBanner" class="consent-banner" role="dialog" aria-label="Analytics consent">
+  <p class="consent-text">We use Google Analytics to improve the site. <a href="https://cronbuilder.dev/privacy.html">Privacy</a></p>
+  <div class="consent-btns">
+    <button type="button" class="consent-btn accept" id="consentAccept">Accept</button>
+    <button type="button" class="consent-btn decline" id="consentDecline">Decline</button>
+  </div>
+</div>
+<script>
+(function(){var k='cronbuilder_analytics',id='G-5RNVMHRHLH';
+function load(){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config',id);var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(s);}
+function set(v){try{localStorage.setItem(k,v);}catch(e){}var b=document.getElementById('consentBanner');if(b)b.classList.add('hidden');if(v==='accepted')load();}
+var b=document.getElementById('consentBanner'),a=document.getElementById('consentAccept'),d=document.getElementById('consentDecline');
+if(!b)return;try{var c=localStorage.getItem(k);if(c==='accepted'){load();b.classList.add('hidden');return;}if(c==='declined'){b.classList.add('hidden');return;}}catch(e){}
+if(a)a.onclick=function(){set('accepted');};if(d)d.onclick=function(){set('declined');};})();
+</script>
+
+</body>
+</html>

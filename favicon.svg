@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <rect width="32" height="32" rx="6" fill="#111318"/>
+  <circle cx="8" cy="10" r="2" fill="#ff5f57"/>
+  <circle cx="16" cy="10" r="2" fill="#febc2e"/>
+  <circle cx="24" cy="10" r="2" fill="#28c840"/>
+  <text x="16" y="24" font-family="system-ui, sans-serif" font-size="10" font-weight="700" fill="#a6e3a1" text-anchor="middle">cron</text>
+</svg>

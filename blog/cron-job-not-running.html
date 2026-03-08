@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cron Job Not Running? 10 Reasons Why (And How to Fix Each) | CronBuilder.dev</title>
+<meta name="description" content="Your cron job isn't running and there's no error. Here are the 10 most common reasons — PATH issues, permission problems, timezone confusion — and exactly how to fix each one.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://cronbuilder.dev/blog/cron-job-not-running.html">
+<meta property="og:title" content="Cron Job Not Running? 10 Reasons Why (And How to Fix Each)">
+<meta property="og:description" content="Silent cron failures are the worst. Here are the 10 most common reasons your cron job isn't running, with exact diagnostic commands and fixes.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://cronbuilder.dev/blog/cron-job-not-running.html">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Cron Job Not Running? 10 Reasons Why (And How to Fix Each)",
+  "description": "The definitive debugging guide for silent cron failures. PATH issues, permissions, timezone confusion, overlapping jobs — all 10 causes with exact fixes.",
+  "author": { "@type": "Organization", "name": "CronBuilder.dev" },
+  "publisher": { "@type": "Organization", "name": "CronBuilder.dev", "url": "https://cronbuilder.dev" },
+  "datePublished": "2026-03-08",
+  "dateModified": "2026-03-08",
+  "mainEntityOfPage": "https://cronbuilder.dev/blog/cron-job-not-running.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Why is my cron job not running?",
+      "acceptedAnswer": { "@type": "Answer", "text": "The most common reasons are: wrong expression syntax, PATH environment differences, the cron daemon not running, file permission issues, timezone mismatch, or the script not being executable. Start by checking cron logs with grep CRON /var/log/syslog and validate your expression at cronbuilder.dev." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I check if a cron job ran?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Run: grep CRON /var/log/syslog | tail -30 on Ubuntu/Debian, or journalctl -u cron --since '1 hour ago' on systemd systems. If you see your job in the logs but it still failed, the issue is in the script itself, not cron." }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does my script work manually but not in cron?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Cron runs with a minimal PATH that doesn't include /usr/local/bin, your NVM path, or other custom directories. The fix is to use absolute paths to every command, or set PATH explicitly at the top of your crontab." }
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0d; --surface: #111318; --surface2: #181c23;
+    --border: #22283a; --border2: #2d3550;
+    --text: #cdd6f4; --muted: #7a8299;
+    --green: #a6e3a1; --yellow: #f9e2af; --blue: #89b4fa;
+    --teal: #94e2d5; --red: #f38ba8; --mauve: #cba6f7; --peach: #fab387;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.8; }
+
+  nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 48px; display: flex; align-items: center; gap: 24px; position: sticky; top: 0; z-index: 100; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.82rem; font-family: var(--font-mono); transition: color 0.15s; }
+  nav a:hover, nav a.active { color: var(--green); }
+  nav .nav-logo { font-family: var(--font-ui); font-weight: 700; color: var(--text); font-size: 0.9rem; margin-right: auto; }
+
+  .page { max-width: 740px; margin: 0 auto; padding: 56px 24px 80px; }
+  .breadcrumb { font-size: 0.78rem; color: var(--muted); margin-bottom: 28px; font-family: var(--font-mono); }
+  .breadcrumb a { color: var(--muted); text-decoration: none; }
+  .article-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--red); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 14px; }
+  h1 { font-family: var(--font-ui); font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; color: #fff; margin-bottom: 16px; }
+  .article-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 40px; display: flex; gap: 16px; flex-wrap: wrap; }
+
+  p { margin-bottom: 20px; color: #b0b8d4; }
+  h2 { font-family: var(--font-ui); font-size: 1.3rem; font-weight: 700; color: #fff; margin: 48px 0 14px; letter-spacing: -0.01em; }
+  h3 { font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--text); margin: 24px 0 8px; }
+  strong { color: var(--text); font-weight: 500; }
+  a { color: var(--blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+  a:hover { border-bottom-color: var(--blue); }
+  ul, ol { padding-left: 22px; margin-bottom: 20px; color: #b0b8d4; }
+  li { margin-bottom: 8px; }
+
+  code { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; color: var(--yellow); font-family: var(--font-mono); font-size: 0.84em; padding: 2px 7px; }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin: 16px 0 24px; overflow-x: auto; position: relative; }
+  pre code { background: none; border: none; padding: 0; font-size: 0.85rem; line-height: 1.9; color: var(--yellow); display: block; }
+  .comment { color: var(--muted) !important; }
+  .pre-label { font-family: var(--font-mono); font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+
+  /* REASON CARDS */
+  .reason { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 24px 0 36px; }
+  .reason-header { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .reason-num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); background: var(--surface2); border: 1px solid var(--border2); border-radius: 6px; padding: 3px 10px; flex-shrink: 0; }
+  .reason-title { font-family: var(--font-ui); font-weight: 700; color: #fff; font-size: 1rem; }
+  .reason-badge { margin-left: auto; font-size: 0.68rem; font-family: var(--font-mono); padding: 3px 9px; border-radius: 4px; flex-shrink: 0; }
+  .badge-red { background: rgba(243,139,168,0.12); color: var(--red); border: 1px solid rgba(243,139,168,0.25); }
+  .badge-yellow { background: rgba(249,226,175,0.1); color: var(--yellow); border: 1px solid rgba(249,226,175,0.2); }
+  .badge-green { background: rgba(166,227,161,0.1); color: var(--green); border: 1px solid rgba(166,227,161,0.2); }
+  .reason-body { padding: 16px 20px 20px; }
+  .reason-body p { margin-bottom: 14px; font-size: 0.92rem; }
+  .reason-body pre { margin: 10px 0 16px; }
+  .reason-body h3 { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font-mono); margin: 16px 0 6px; }
+
+  /* DIAGNOSTIC FLOW */
+  .diag { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; margin: 28px 0; }
+  .diag-title { font-family: var(--font-mono); font-size: 0.72rem; color: var(--green); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 16px; }
+  .diag-step { display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start; }
+  .diag-step:last-child { margin-bottom: 0; }
+  .diag-n { background: var(--green); color: #000; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .diag-text { font-size: 0.88rem; color: #b0b8d4; line-height: 1.6; }
+  .diag-text code { font-size: 0.8rem; }
+
+  .callout { border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; }
+  .callout.green { background: #0d1f11; border-color: var(--green); }
+  .callout.red { background: #1e0d0f; border-color: var(--red); }
+  .callout.yellow { background: #1e1a0d; border-color: var(--yellow); }
+  .callout.blue { background: #0d1520; border-color: var(--blue); }
+  .callout p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+  .callout strong { color: var(--text); }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin: 32px 0; }
+  .toc-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .toc ol { padding-left: 18px; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { font-size: 0.87rem; color: var(--blue); text-decoration: none; }
+
+  .cta-box { background: linear-gradient(135deg, #151b2e, #1a2040); border: 1px solid #2d3860; border-radius: 12px; padding: 28px; text-align: center; margin: 48px 0; }
+  .cta-box h3 { font-family: var(--font-ui); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .cta-box p { font-size: 0.88rem; color: var(--muted); margin-bottom: 18px; }
+  .cta-btn { background: var(--green); border: none; border-radius: 8px; color: #000; font-family: var(--font-ui); font-size: 0.92rem; font-weight: 700; padding: 12px 28px; text-decoration: none; display: inline-block; transition: opacity 0.15s; }
+  .cta-btn:hover { opacity: 0.85; border-bottom: none; }
+
+  footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 60px; }
+  footer a { color: var(--muted); text-decoration: none; }
+  .consent-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; z-index: 1000; font-size: 0.82rem; }
+  .consent-banner.hidden { display: none; }
+  .consent-text { color: var(--muted); flex: 1; min-width: 200px; }
+  .consent-text a { color: var(--blue); text-decoration: none; }
+  .consent-btns { display: flex; gap: 10px; }
+  .consent-btn { font-family: var(--font-mono); font-size: 0.78rem; padding: 8px 16px; border-radius: 6px; cursor: pointer; border: 1px solid; }
+  .consent-btn.accept { background: var(--green); color: #000; border-color: var(--green); }
+  .consent-btn.decline { background: transparent; color: var(--muted); border-color: var(--border); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://cronbuilder.dev" class="nav-logo">CronBuilder.dev</a>
+  <a href="https://cronbuilder.dev">Tool</a>
+  <a href="https://cronbuilder.dev/blog/" class="active">Blog</a>
+</nav>
+
+<div class="page">
+  <div class="breadcrumb">
+    <a href="https://cronbuilder.dev">Home</a> › <a href="https://cronbuilder.dev/blog/">Blog</a> › Cron Job Not Running
+  </div>
+
+  <div class="article-label">// debugging</div>
+  <h1>Cron Job Not Running?<br>10 Reasons Why (And Exactly How to Fix Each)</h1>
+  <div class="article-meta">
+    <span>📅 March 2026</span>
+    <span>⏱ 9 min read</span>
+    <span>🏷 Debugging · Linux · DevOps</span>
+  </div>
+
+  <p>It's 9am. Your backup didn't run. No error. No log entry. No warning. Just silence. Silent cron failures are one of the most infuriating experiences in Linux administration — the job doesn't run, and cron tells you absolutely nothing about why.</p>
+
+  <p>This guide covers all 10 causes, in order of likelihood, with the exact diagnostic commands and fixes for each. By the end you'll have a systematic process that solves 99% of cron failures in under 10 minutes.</p>
+
+  <div class="toc">
+    <div class="toc-title">// jump to the most likely cause</div>
+    <ol>
+      <li><a href="#r1">Wrong expression syntax</a></li>
+      <li><a href="#r2">PATH is not your PATH</a></li>
+      <li><a href="#r3">Script is not executable</a></li>
+      <li><a href="#r4">Cron daemon is not running</a></li>
+      <li><a href="#r5">Relative paths in the script</a></li>
+      <li><a href="#r6">Wrong timezone on the server</a></li>
+      <li><a href="#r7">Output is swallowing errors</a></li>
+      <li><a href="#r8">Environment variables missing</a></li>
+      <li><a href="#r9">Overlapping job execution</a></li>
+      <li><a href="#r10">Wrong user or permission on the file</a></li>
+    </ol>
+  </div>
+
+  <div class="diag">
+    <div class="diag-title">// 60-second first-pass diagnostic — run these first</div>
+    <div class="diag-step"><div class="diag-n">1</div><div class="diag-text">Check if cron is running: <code>systemctl status cron</code> (Ubuntu) or <code>systemctl status crond</code> (RHEL/CentOS)</div></div>
+    <div class="diag-step"><div class="diag-n">2</div><div class="diag-text">Check if your job appeared in logs at all: <code>grep CRON /var/log/syslog | tail -30</code></div></div>
+    <div class="diag-step"><div class="diag-n">3</div><div class="diag-text">Validate your expression: paste it into <a href="https://cronbuilder.dev">cronbuilder.dev</a> and check the next 10 run times</div></div>
+    <div class="diag-step"><div class="diag-n">4</div><div class="diag-text">Run the command manually as the cron user: <code>sudo -u www-data /path/to/script.sh</code></div></div>
+  </div>
+
+  <!-- REASON 1 -->
+  <div class="reason" id="r1">
+    <div class="reason-header">
+      <div class="reason-num">01</div>
+      <div class="reason-title">Wrong Expression Syntax</div>
+      <div class="reason-badge badge-red">Most common</div>
+    </div>
+    <div class="reason-body">
+      <p>Cron expressions are subtle. A single wrong character means the job never fires — and cron logs this as a parse error, not as a failure, so it's easy to miss.</p>
+      <h3>Diagnose</h3>
+      <pre><code><span class="comment"># Look for "bad minute" or similar parse errors</span>
+grep CRON /var/log/syslog | grep -i "error\|bad\|invalid"</code></pre>
+      <h3>Common mistakes that look correct but aren't</h3>
+      <pre><code><span class="comment"># WRONG: space between */ and 5</span>
+* /5 * * * *
+
+<span class="comment"># WRONG: 6 fields on a standard Unix cron</span>
+0 */5 * * * *
+
+<span class="comment"># WRONG: value out of range (hour goes 0-23, not 1-24)</span>
+0 24 * * *
+
+<span class="comment"># WRONG: day-of-week 7 is non-standard (use 0 for Sunday)</span>
+0 9 * * 7</code></pre>
+      <h3>Fix</h3>
+      <p>Paste your expression into <a href="https://cronbuilder.dev">CronBuilder.dev</a>. If it's valid, you'll see the next 10 run times and a plain-English explanation. If it's invalid, you'll see the exact field that's wrong and why.</p>
+    </div>
+  </div>
+
+  <!-- REASON 2 -->
+  <div class="reason" id="r2">
+    <div class="reason-header">
+      <div class="reason-num">02</div>
+      <div class="reason-title">PATH Is Not Your PATH</div>
+      <div class="reason-badge badge-red">Extremely common</div>
+    </div>
+    <div class="reason-body">
+      <p>This is the single most common cause of "works manually, fails in cron." When you run a command in your terminal, your shell loads <code>.bashrc</code>, <code>.bash_profile</code>, and your full <code>PATH</code>. Cron loads none of that. It starts with a bare-minimum PATH of approximately <code>/usr/bin:/bin</code>.</p>
+      <p>So when your script calls <code>python3</code>, <code>node</code>, <code>npm</code>, <code>docker</code>, <code>php</code>, or virtually any tool installed via a package manager — cron can't find it.</p>
+      <h3>Diagnose</h3>
+      <pre><code><span class="comment"># See exactly what PATH cron will use</span>
+* * * * * env > /tmp/cron-env.log
+
+<span class="comment"># Then check the file</span>
+cat /tmp/cron-env.log | grep PATH</code></pre>
+      <h3>Fix — Option 1: Use absolute paths (safest)</h3>
+      <pre><code><span class="comment"># Find the full path of the binary</span>
+which python3       <span class="comment"># → /usr/bin/python3</span>
+which node          <span class="comment"># → /usr/local/bin/node  (or ~/.nvm/versions/...)</span>
+
+<span class="comment"># Then use the absolute path in crontab</span>
+0 2 * * * /usr/bin/python3 /home/user/backup.py</code></pre>
+      <h3>Fix — Option 2: Set PATH at the top of your crontab</h3>
+      <pre><code>PATH=/usr/local/bin:/usr/bin:/bin:/home/user/.nvm/versions/node/v20.0.0/bin
+MAILTO=""
+
+0 2 * * * python3 /home/user/backup.py</code></pre>
+      <div class="callout blue">
+        <p><strong>NVM users:</strong> NVM sets up PATH in your <code>.bashrc</code> which cron never loads. Always use the full path like <code>/home/user/.nvm/versions/node/v20.11.0/bin/node</code>, or hardlink to <code>/usr/local/bin/node</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- REASON 3 -->
+  <div class="reason" id="r3">
+    <div class="reason-header">
+      <div class="reason-num">03</div>
+      <div class="reason-title">Script Is Not Executable</div>
+      <div class="reason-badge badge-yellow">Very common</div>
+    </div>
+    <div class="reason-body">
+      <p>If you call a script directly (e.g. <code>/home/user/backup.sh</code>), it must have the execute bit set <em>for the user cron runs as</em>. This is easy to miss when you create a new script or transfer files from another machine.</p>
+      <h3>Diagnose</h3>
+      <pre><code>ls -la /home/user/backup.sh
+<span class="comment"># Look for the x bit: -rwxr-xr-x means executable</span>
+<span class="comment"># -rw-r--r-- means NOT executable — this is the problem</span></code></pre>
+      <h3>Fix</h3>
+      <pre><code><span class="comment"># Make executable by the owner</span>
+chmod +x /home/user/backup.sh
+
+<span class="comment"># Or more precisely</span>
+chmod 755 /home/user/backup.sh</code></pre>
+      <p>Alternatively, call it via the interpreter directly to sidestep permissions entirely:</p>
+      <pre><code><span class="comment"># No executable bit needed when calling via interpreter</span>
+0 2 * * * /bin/bash /home/user/backup.sh
+0 2 * * * /usr/bin/python3 /home/user/backup.py</code></pre>
+    </div>
+  </div>
+
+  <!-- REASON 4 -->
+  <div class="reason" id="r4">
+    <div class="reason-header">
+      <div class="reason-num">04</div>
+      <div class="reason-title">Cron Daemon Is Not Running</div>
+      <div class="reason-badge badge-yellow">Common after reboots</div>
+    </div>
+    <div class="reason-body">
+      <p>Cron requires a background daemon to be running at all times. After a server reboot, a crash, or an OS upgrade, the daemon may not have restarted.</p>
+      <h3>Diagnose and fix</h3>
+      <pre><code><span class="comment"># Ubuntu / Debian</span>
+systemctl status cron
+sudo systemctl start cron
+sudo systemctl enable cron  <span class="comment"># ensure it starts on boot</span>
+
+<span class="comment"># RHEL / CentOS / Fedora</span>
+systemctl status crond
+sudo systemctl start crond
+sudo systemctl enable crond
+
+<span class="comment"># Older systems using SysV init</span>
+service cron status
+service cron start</code></pre>
+    </div>
+  </div>
+
+  <!-- REASON 5 -->
+  <div class="reason" id="r5">
+    <div class="reason-header">
+      <div class="reason-num">05</div>
+      <div class="reason-title">Relative Paths Inside the Script</div>
+      <div class="reason-badge badge-yellow">Very common</div>
+    </div>
+    <div class="reason-body">
+      <p>Cron sets the working directory to the user's home directory, not to the directory where the script lives. Any relative path inside the script like <code>../data/input.csv</code> or <code>./config.json</code> will resolve to a completely wrong location.</p>
+      <h3>Fix — Set working directory explicitly in the script</h3>
+      <pre><code>#!/bin/bash
+<span class="comment"># Always the first line of any cron-called script</span>
+cd "$(dirname "$0")" || exit 1
+
+<span class="comment"># Now relative paths resolve relative to the script's location</span>
+python3 process.py --input ./data/input.csv</code></pre>
+      <h3>Or set it in the crontab itself</h3>
+      <pre><code><span class="comment"># cd first, then run the script</span>
+0 2 * * * cd /home/user/myapp && ./run.sh</code></pre>
+    </div>
+  </div>
+
+  <!-- REASON 6 -->
+  <div class="reason" id="r6">
+    <div class="reason-header">
+      <div class="reason-num">06</div>
+      <div class="reason-title">Timezone Mismatch</div>
+      <div class="reason-badge badge-yellow">Especially common on cloud servers</div>
+    </div>
+    <div class="reason-body">
+      <p>Cloud servers are almost always set to UTC. If you write a cron expression thinking about your local time (e.g. "9am") but the server is UTC and you're in UTC+1, the job will fire at 8am your time — or worse, it appears not to run on the day you expect because the server's date rolled over at a different time to yours.</p>
+      <h3>Diagnose</h3>
+      <pre><code><span class="comment"># Check what timezone the server thinks it is</span>
+date
+timedatectl</code></pre>
+      <h3>Fix — Set timezone per crontab (modern cron supports this)</h3>
+      <pre><code>CRON_TZ=Europe/London
+0 9 * * 1-5 /home/user/morning-report.sh
+
+CRON_TZ=America/New_York
+0 17 * * 1-5 /home/user/eod-export.sh</code></pre>
+      <h3>Or just always think in UTC</h3>
+      <pre><code><span class="comment"># 9am London = 8am UTC (winter), 9am London = 8am UTC (summer)</span>
+<span class="comment"># Skip the mental maths — use CRON_TZ above</span></code></pre>
+      <div class="callout yellow">
+        <p><strong>Tip:</strong> Use the <a href="https://cronbuilder.dev">CronBuilder timezone selector</a> to preview exactly when your expression fires in any timezone — without any mental arithmetic.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- REASON 7 -->
+  <div class="reason" id="r7">
+    <div class="reason-header">
+      <div class="reason-num">07</div>
+      <div class="reason-title">Output Is Swallowing Your Errors</div>
+      <div class="reason-badge badge-green">Easy to miss</div>
+    </div>
+    <div class="reason-body">
+      <p>By default, cron emails stdout/stderr to the system user — but most servers don't have a mail agent configured, so output silently disappears. If you've redirected stdout to <code>/dev/null</code> but not stderr, or vice versa, errors vanish completely.</p>
+      <h3>Fix — Log both stdout and stderr to a file</h3>
+      <pre><code><span class="comment"># Redirect both stdout (1) and stderr (2) to a log file</span>
+0 2 * * * /home/user/backup.sh >> /var/log/backup.log 2>&1
+
+<span class="comment"># Append with timestamp for easier reading</span>
+0 2 * * * echo "=== $(date) ===" >> /var/log/backup.log && /home/user/backup.sh >> /var/log/backup.log 2>&1</code></pre>
+      <h3>Disable email notifications if you're using file logging</h3>
+      <pre><code><span class="comment"># Add this at the top of your crontab</span>
+MAILTO=""</code></pre>
+      <div class="callout red">
+        <p><strong>Common trap:</strong> <code>&gt; /dev/null 2>&amp;1</code> discards all output and errors. Great for silencing noise, terrible for debugging. While you're debugging, always write to a log file instead.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- REASON 8 -->
+  <div class="reason" id="r8">
+    <div class="reason-header">
+      <div class="reason-num">08</div>
+      <div class="reason-title">Environment Variables Missing</div>
+      <div class="reason-badge badge-yellow">Common with app scripts</div>
+    </div>
+    <div class="reason-body">
+      <p>Your script works manually because you've set environment variables in <code>.bashrc</code>, <code>.bash_profile</code>, or via <code>direnv</code>. Cron doesn't load any of these. API keys, database URLs, config paths — all missing.</p>
+      <h3>Fix — Source a .env file inside the script</h3>
+      <pre><code>#!/bin/bash
+<span class="comment"># Load environment variables at the start of the script</span>
+set -a
+source /home/user/myapp/.env
+set +a
+
+python3 myapp.py</code></pre>
+      <h3>Or set variables in the crontab itself</h3>
+      <pre><code>DATABASE_URL=postgresql://user:pass@localhost/mydb
+API_KEY=your_key_here
+MAILTO=""
+
+0 2 * * * /home/user/myapp/backup.py</code></pre>
+      <h3>Diagnose exactly what environment cron sees</h3>
+      <pre><code><span class="comment"># This writes the full cron environment to a file</span>
+* * * * * env > /tmp/cron-environment.txt
+
+<span class="comment"># Then compare with your shell environment</span>
+env > /tmp/shell-environment.txt
+diff /tmp/shell-environment.txt /tmp/cron-environment.txt</code></pre>
+    </div>
+  </div>
+
+  <!-- REASON 9 -->
+  <div class="reason" id="r9">
+    <div class="reason-header">
+      <div class="reason-num">09</div>
+      <div class="reason-title">Overlapping Executions</div>
+      <div class="reason-badge badge-green">Causes data corruption</div>
+    </div>
+    <div class="reason-body">
+      <p>If a job takes longer to complete than its interval, a second instance starts before the first one finishes. This doesn't prevent jobs from running — it causes <em>too many</em> to run. Side effects include database lock conflicts, corrupted output files, and resource exhaustion that eventually causes jobs to fail.</p>
+      <h3>Diagnose</h3>
+      <pre><code><span class="comment"># Check if multiple instances are running right now</span>
+ps aux | grep backup.sh | grep -v grep</code></pre>
+      <h3>Fix — Use flock to prevent overlapping</h3>
+      <pre><code><span class="comment"># flock exits immediately if the lock is already held</span>
+0 */5 * * * flock -n /tmp/myapp.lock /home/user/myapp/process.sh
+
+<span class="comment"># Or with a timeout: wait up to 10 seconds for the lock</span>
+0 */5 * * * flock -w 10 /tmp/myapp.lock /home/user/myapp/process.sh</code></pre>
+    </div>
+  </div>
+
+  <!-- REASON 10 -->
+  <div class="reason" id="r10">
+    <div class="reason-header">
+      <div class="reason-num">10</div>
+      <div class="reason-title">Wrong User or File Permissions</div>
+      <div class="reason-badge badge-green">Common on multi-user servers</div>
+    </div>
+    <div class="reason-body">
+      <p>Your crontab runs as your user, but the script or the files it needs might be owned by a different user, or in a directory the cron user can't read. This is especially common when scripts are shared between users or when cron runs as <code>www-data</code> or another service account.</p>
+      <h3>Diagnose</h3>
+      <pre><code><span class="comment"># Check who owns the script and what permissions it has</span>
+ls -la /path/to/script.sh
+
+<span class="comment"># Test running it as the cron user</span>
+sudo -u www-data /path/to/script.sh</code></pre>
+      <h3>Fix</h3>
+      <pre><code><span class="comment"># Change ownership to the user running cron</span>
+sudo chown your-user:your-user /path/to/script.sh
+
+<span class="comment"># Or set correct permissions</span>
+chmod 755 /path/to/script.sh</code></pre>
+      <p>If you need cron to run as a different user, use the system crontab at <code>/etc/crontab</code> which has an extra username field:</p>
+      <pre><code><span class="comment"># /etc/crontab — note the username field between schedule and command</span>
+0 2 * * * www-data /var/www/html/maintenance.sh</code></pre>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <h3>Start with the expression</h3>
+    <p>90% of cron debugging sessions end at step one: the expression was wrong. Paste yours into CronBuilder.dev to eliminate that possibility immediately — see the next 10 run times, the exact field breakdown, and detailed error messages if something's off.</p>
+    <a class="cta-btn" href="https://cronbuilder.dev">Validate My Expression →</a>
+  </div>
+
+  <h2>The Definitive Debugging Checklist</h2>
+  <p>Work through these in order. Most issues are solved by step 4.</p>
+
+  <pre><code>□ 1. Is the cron daemon running?
+      systemctl status cron
+
+□ 2. Is the expression valid?
+      Paste into cronbuilder.dev
+
+□ 3. Did the job even get invoked?
+      grep CRON /var/log/syslog | tail -30
+
+□ 4. Does the command work manually as the cron user?
+      sudo -u your-cron-user /path/to/script.sh
+
+□ 5. Are you using absolute paths for all binaries?
+      which python3 → use that full path
+
+□ 6. Is the script executable?
+      ls -la /path/to/script.sh → look for x bit
+
+□ 7. Are relative paths inside the script resolving correctly?
+      Add: cd "$(dirname "$0")" || exit 1
+
+□ 8. Are you logging output and errors?
+      Append: >> /var/log/myjob.log 2>&1
+
+□ 9. Is the server timezone what you expect?
+      timedatectl
+
+□ 10. Are overlapping instances stacking up?
+       ps aux | grep script-name.sh | grep -v grep</code></pre>
+
+  <div class="callout blue" style="margin-top: 40px;">
+    <p><strong>Related:</strong> <a href="cron-vs-systemd-timers.html">Cron vs systemd timers</a> — when to use each on Linux. <a href="github-actions-cron-schedule.html">GitHub Actions cron schedule</a> — gotchas and UTC.</p>
+  </div>
+
+</div>
+
+<footer>
+  <a href="https://cronbuilder.dev">CronBuilder.dev</a> · Free cron expression builder and explainer ·
+  <a href="https://cronbuilder.dev/blog/">More articles</a>
+</footer>
+
+<div id="consentBanner" class="consent-banner" role="dialog" aria-label="Analytics consent">
+  <p class="consent-text">We use Google Analytics to improve the site. <a href="https://cronbuilder.dev/privacy.html">Privacy</a></p>
+  <div class="consent-btns">
+    <button type="button" class="consent-btn accept" id="consentAccept">Accept</button>
+    <button type="button" class="consent-btn decline" id="consentDecline">Decline</button>
+  </div>
+</div>
+<script>
+(function(){var k='cronbuilder_analytics',id='G-5RNVMHRHLH';
+function load(){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config',id);var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(s);}
+function set(v){try{localStorage.setItem(k,v);}catch(e){}var b=document.getElementById('consentBanner');if(b)b.classList.add('hidden');if(v==='accepted')load();}
+var b=document.getElementById('consentBanner'),a=document.getElementById('consentAccept'),d=document.getElementById('consentDecline');
+if(!b)return;try{var c=localStorage.getItem(k);if(c==='accepted'){load();b.classList.add('hidden');return;}if(c==='declined'){b.classList.add('hidden');return;}}catch(e){}
+if(a)a.onclick=function(){set('accepted');};if(d)d.onclick=function(){set('declined');};})();
+</script>
+
+</body>
+</html>

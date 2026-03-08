@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GitHub Actions Cron Schedule: Complete Guide (With Every Gotcha) | CronBuilder.dev</title>
+<meta name="description" content="How to schedule GitHub Actions workflows with cron. Covers the 5-minute minimum, UTC-only timezone, delayed execution, the weekday bug, and how to test before you push.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://cronbuilder.dev/blog/github-actions-cron-schedule.html">
+<meta property="og:title" content="GitHub Actions Cron Schedule: Complete Guide (With Every Gotcha)">
+<meta property="og:description" content="Schedule GitHub Actions with cron expressions. Covers UTC timezone, 5-minute minimum, delayed execution, and how to avoid the weekday trigger bug.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://cronbuilder.dev/blog/github-actions-cron-schedule.html">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "GitHub Actions Cron Schedule: Complete Guide (With Every Gotcha)",
+  "description": "Everything you need to schedule GitHub Actions with cron — including the 5-minute minimum, UTC-only issue, delayed runs, and the DOM+DOW bug.",
+  "author": { "@type": "Organization", "name": "CronBuilder.dev" },
+  "publisher": { "@type": "Organization", "name": "CronBuilder.dev", "url": "https://cronbuilder.dev" },
+  "datePublished": "2026-03-08",
+  "dateModified": "2026-03-08",
+  "mainEntityOfPage": "https://cronbuilder.dev/blog/github-actions-cron-schedule.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the minimum interval for GitHub Actions cron schedules?",
+      "acceptedAnswer": { "@type": "Answer", "text": "GitHub Actions enforces a minimum interval of 5 minutes. Any expression that would trigger more frequently than every 5 minutes will not run. The expression * * * * * (every minute) will be rejected." }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is my GitHub Actions scheduled workflow running late?",
+      "acceptedAnswer": { "@type": "Answer", "text": "GitHub explicitly states that scheduled workflows may be delayed during periods of high load on GitHub's infrastructure. Delays of 5-30 minutes are common. For time-critical tasks, GitHub Actions scheduled triggers are not reliable — use an external scheduler." }
+    },
+    {
+      "@type": "Question",
+      "name": "What timezone does GitHub Actions use for cron schedules?",
+      "acceptedAnswer": { "@type": "Answer", "text": "GitHub Actions always runs cron schedules in UTC. There is no way to set a different timezone in the workflow file. You must convert your desired local time to UTC manually, or use the CRON_TZ workaround inside your workflow steps." }
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0d; --surface: #111318; --surface2: #181c23;
+    --border: #22283a; --border2: #2d3550;
+    --text: #cdd6f4; --muted: #7a8299;
+    --green: #a6e3a1; --yellow: #f9e2af; --blue: #89b4fa;
+    --teal: #94e2d5; --red: #f38ba8; --mauve: #cba6f7; --peach: #fab387;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.8; }
+
+  nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; height: 48px; display: flex; align-items: center; gap: 24px; position: sticky; top: 0; z-index: 100; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.82rem; font-family: var(--font-mono); transition: color 0.15s; }
+  nav a:hover, nav a.active { color: var(--green); }
+  nav .nav-logo { font-family: var(--font-ui); font-weight: 700; color: var(--text); font-size: 0.9rem; margin-right: auto; }
+
+  .page { max-width: 740px; margin: 0 auto; padding: 56px 24px 80px; }
+  .breadcrumb { font-size: 0.78rem; color: var(--muted); margin-bottom: 28px; font-family: var(--font-mono); }
+  .breadcrumb a { color: var(--muted); text-decoration: none; }
+  .article-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--blue); text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 14px; }
+  h1 { font-family: var(--font-ui); font-size: clamp(1.7rem, 4vw, 2.4rem); font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; color: #fff; margin-bottom: 16px; }
+  .article-meta { font-size: 0.82rem; color: var(--muted); margin-bottom: 40px; display: flex; gap: 16px; flex-wrap: wrap; }
+
+  p { margin-bottom: 20px; color: #b0b8d4; }
+  h2 { font-family: var(--font-ui); font-size: 1.3rem; font-weight: 700; color: #fff; margin: 44px 0 14px; letter-spacing: -0.01em; }
+  h3 { font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--text); margin: 24px 0 8px; }
+  strong { color: var(--text); font-weight: 500; }
+  a { color: var(--blue); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+  a:hover { border-bottom-color: var(--blue); }
+  ul, ol { padding-left: 22px; margin-bottom: 20px; color: #b0b8d4; }
+  li { margin-bottom: 8px; }
+
+  code { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; color: var(--yellow); font-family: var(--font-mono); font-size: 0.84em; padding: 2px 7px; }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; margin: 16px 0 24px; overflow-x: auto; }
+  pre code { background: none; border: none; padding: 0; font-size: 0.85rem; line-height: 1.9; color: var(--yellow); display: block; }
+  .comment { color: var(--muted) !important; }
+  .key { color: var(--teal) !important; }
+  .val { color: var(--green) !important; }
+  .str { color: var(--peach) !important; }
+
+  .callout { border-left: 3px solid var(--green); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 20px 0; }
+  .callout.green { background: #0d1f11; border-color: var(--green); }
+  .callout.red { background: #1e0d0f; border-color: var(--red); }
+  .callout.yellow { background: #1e1a0d; border-color: var(--yellow); }
+  .callout.blue { background: #0d1520; border-color: var(--blue); }
+  .callout p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+  .callout strong { color: var(--text); }
+
+  /* GOTCHA CARDS */
+  .gotcha { background: var(--surface); border: 1px solid rgba(243,139,168,0.2); border-radius: 12px; overflow: hidden; margin: 24px 0 32px; }
+  .gotcha-header { background: rgba(243,139,168,0.07); border-bottom: 1px solid rgba(243,139,168,0.15); padding: 14px 20px; display: flex; align-items: center; gap: 10px; }
+  .gotcha-icon { font-size: 1rem; }
+  .gotcha-title { font-family: var(--font-ui); font-weight: 700; color: var(--red); font-size: 0.95rem; }
+  .gotcha-body { padding: 16px 20px 20px; }
+  .gotcha-body p { font-size: 0.92rem; margin-bottom: 12px; }
+  .gotcha-body pre { margin: 10px 0; }
+
+  /* SCHEDULE TABLE */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 0.87rem; }
+  th { text-align: left; padding: 9px 14px; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 1px solid var(--border); font-family: var(--font-mono); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  td code { font-size: 0.8rem; }
+  .td-muted { color: var(--muted); font-size: 0.82rem; }
+
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin: 32px 0; }
+  .toc-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .toc ol { padding-left: 18px; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { font-size: 0.87rem; color: var(--blue); text-decoration: none; }
+
+  .cta-box { background: linear-gradient(135deg, #151b2e, #1a2040); border: 1px solid #2d3860; border-radius: 12px; padding: 28px; text-align: center; margin: 48px 0; }
+  .cta-box h3 { font-family: var(--font-ui); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .cta-box p { font-size: 0.88rem; color: var(--muted); margin-bottom: 18px; }
+  .cta-btn { background: var(--green); border: none; border-radius: 8px; color: #000; font-family: var(--font-ui); font-size: 0.92rem; font-weight: 700; padding: 12px 28px; text-decoration: none; display: inline-block; }
+  .cta-btn:hover { opacity: 0.85; border-bottom: none; }
+
+  footer { border-top: 1px solid var(--border); padding: 20px 24px; text-align: center; font-size: 0.75rem; color: var(--muted); margin-top: 60px; }
+  footer a { color: var(--muted); text-decoration: none; }
+  .consent-banner { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; z-index: 1000; font-size: 0.82rem; }
+  .consent-banner.hidden { display: none; }
+  .consent-text { color: var(--muted); flex: 1; min-width: 200px; }
+  .consent-text a { color: var(--blue); text-decoration: none; }
+  .consent-btns { display: flex; gap: 10px; }
+  .consent-btn { font-family: var(--font-mono); font-size: 0.78rem; padding: 8px 16px; border-radius: 6px; cursor: pointer; border: 1px solid; }
+  .consent-btn.accept { background: var(--green); color: #000; border-color: var(--green); }
+  .consent-btn.decline { background: transparent; color: var(--muted); border-color: var(--border); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="https://cronbuilder.dev" class="nav-logo">CronBuilder.dev</a>
+  <a href="https://cronbuilder.dev">Tool</a>
+  <a href="https://cronbuilder.dev/blog/" class="active">Blog</a>
+</nav>
+
+<div class="page">
+  <div class="breadcrumb">
+    <a href="https://cronbuilder.dev">Home</a> › <a href="https://cronbuilder.dev/blog/">Blog</a> › GitHub Actions Cron Schedule
+  </div>
+
+  <div class="article-label">// github actions</div>
+  <h1>GitHub Actions Cron Schedule:<br>Complete Guide (With Every Gotcha)</h1>
+  <div class="article-meta">
+    <span>📅 March 2026</span>
+    <span>⏱ 8 min read</span>
+    <span>🏷 GitHub Actions · CI/CD · Scheduling</span>
+  </div>
+
+  <p>GitHub Actions makes it easy to schedule automated workflows — but it comes with a handful of sharp edges that catch almost every developer at least once. This guide covers everything from basic syntax to the 5 gotchas that explain why your scheduled workflow isn't running when you expect it to.</p>
+
+  <div class="toc">
+    <div class="toc-title">// contents</div>
+    <ol>
+      <li><a href="#basic">Basic syntax</a></li>
+      <li><a href="#expressions">Ready-to-use expressions</a></li>
+      <li><a href="#gotcha1">Gotcha 1: UTC only</a></li>
+      <li><a href="#gotcha2">Gotcha 2: 5-minute minimum</a></li>
+      <li><a href="#gotcha3">Gotcha 3: Delayed execution</a></li>
+      <li><a href="#gotcha4">Gotcha 4: Inactive repo throttling</a></li>
+      <li><a href="#gotcha5">Gotcha 5: The DOM+DOW bug</a></li>
+      <li><a href="#testing">How to test before pushing</a></li>
+      <li><a href="#multiple">Multiple schedules on one workflow</a></li>
+    </ol>
+  </div>
+
+  <h2 id="basic">Basic Syntax</h2>
+  <p>Scheduled workflows live in your <code>.github/workflows/</code> directory. The <code>schedule</code> trigger takes a list of cron expressions under the <code>on:</code> key:</p>
+
+  <pre><code><span class="comment"># .github/workflows/scheduled-job.yml</span>
+<span class="key">name:</span> <span class="val">Scheduled Task</span>
+
+<span class="key">on:</span>
+  <span class="key">schedule:</span>
+    <span class="comment">  # Runs every day at 9:00 AM UTC</span>
+    - <span class="key">cron:</span> <span class="str">'0 9 * * *'</span>
+
+<span class="key">jobs:</span>
+  <span class="key">run-task:</span>
+    <span class="key">runs-on:</span> <span class="val">ubuntu-latest</span>
+    <span class="key">steps:</span>
+      - <span class="key">uses:</span> <span class="val">actions/checkout@v4</span>
+      - <span class="key">name:</span> <span class="val">Run the task</span>
+        <span class="key">run:</span> <span class="val">echo "Running at $(date)"</span></code></pre>
+
+  <div class="callout blue">
+    <p><strong>The expression must be in single quotes.</strong> GitHub Actions YAML is strict about this — unquoted cron expressions with <code>*</code> can cause YAML parse errors on some parsers.</p>
+  </div>
+
+  <h2 id="expressions">Ready-to-Use Expressions for GitHub Actions</h2>
+  <p>All times are UTC. Use the <a href="https://cronbuilder.dev">CronBuilder timezone selector</a> to find your UTC equivalent if you're scheduling for a specific local time.</p>
+
+  <table>
+    <thead>
+      <tr><th>Expression</th><th>Schedule</th><th>UTC time</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>'0 0 * * *'</code></td><td>Daily at midnight UTC</td><td class="td-muted">00:00 UTC</td></tr>
+      <tr><td><code>'0 9 * * *'</code></td><td>Daily at 9am UTC</td><td class="td-muted">09:00 UTC</td></tr>
+      <tr><td><code>'0 9 * * 1-5'</code></td><td>Weekdays at 9am UTC</td><td class="td-muted">Mon–Fri 09:00 UTC</td></tr>
+      <tr><td><code>'0 6 * * 1'</code></td><td>Every Monday at 6am UTC</td><td class="td-muted">Mon 06:00 UTC</td></tr>
+      <tr><td><code>'0 0 1 * *'</code></td><td>1st of every month, midnight UTC</td><td class="td-muted">1st 00:00 UTC</td></tr>
+      <tr><td><code>'*/5 * * * *'</code></td><td>Every 5 minutes (minimum allowed)</td><td class="td-muted">:00 :05 :10...</td></tr>
+      <tr><td><code>'*/15 * * * *'</code></td><td>Every 15 minutes</td><td class="td-muted">:00 :15 :30 :45</td></tr>
+      <tr><td><code>'0 */6 * * *'</code></td><td>Every 6 hours</td><td class="td-muted">00:00 06:00 12:00 18:00</td></tr>
+      <tr><td><code>'30 8 * * 1-5'</code></td><td>Weekdays at 8:30am UTC (= 9:30 BST)</td><td class="td-muted">Mon–Fri 08:30 UTC</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="gotcha1">⚠ Gotcha 1: GitHub Actions Cron Is UTC Only</h2>
+
+  <div class="gotcha">
+    <div class="gotcha-header"><div class="gotcha-icon">🕐</div><div class="gotcha-title">All schedules run in UTC. There is no timezone setting.</div></div>
+    <div class="gotcha-body">
+      <p>Unlike Linux cron (which respects the server timezone and supports <code>CRON_TZ</code>), GitHub Actions has no timezone configuration for schedule triggers. The <code>cron:</code> value is <em>always</em> interpreted as UTC.</p>
+      <p>If you want a job to run at 9am London time (UTC+1 in winter, UTC+2 in summer), you need to write <code>'0 8 * * *'</code> in winter and update it to <code>'0 7 * * *'</code> when DST kicks in — or accept that the local time will drift by an hour twice a year.</p>
+      <h3>Workaround: Handle timezone in the workflow step</h3>
+      <pre><code><span class="key">steps:</span>
+  - <span class="key">name:</span> <span class="val">Run only if it's 9am in London</span>
+    <span class="key">run:</span> |
+      <span class="comment">      # Check current London time inside the step</span>
+      LONDON_HOUR=$(TZ='Europe/London' date +%H)
+      if [ "$LONDON_HOUR" -eq 9 ]; then
+        echo "Running at 9am London"
+        ./run-task.sh
+      fi</code></pre>
+      <p>This is inelegant but it's the most DST-safe approach if local time matters to you.</p>
+    </div>
+  </div>
+
+  <h2 id="gotcha2">⚠ Gotcha 2: The 5-Minute Minimum</h2>
+
+  <div class="gotcha">
+    <div class="gotcha-header"><div class="gotcha-icon">⏱</div><div class="gotcha-title">You cannot schedule a workflow to run more often than every 5 minutes.</div></div>
+    <div class="gotcha-body">
+      <p>GitHub enforces a minimum interval of 5 minutes on scheduled workflows. An expression like <code>* * * * *</code> (every minute) or <code>*/2 * * * *</code> (every 2 minutes) will not trigger more frequently — GitHub will simply not run it at the expected cadence, sometimes skipping runs entirely.</p>
+      <pre><code><span class="comment"># ❌ This will NOT run every minute as expected</span>
+- cron: '* * * * *'
+
+<span class="comment"># ❌ This will NOT run every 2 minutes as expected</span>
+- cron: '*/2 * * * *'
+
+<span class="comment"># ✅ This is the minimum that reliably works</span>
+- cron: '*/5 * * * *'</code></pre>
+      <p>If you need sub-5-minute scheduling, use an external service or trigger the workflow via the GitHub API from your own infrastructure.</p>
+    </div>
+  </div>
+
+  <h2 id="gotcha3">⚠ Gotcha 3: Scheduled Runs Are Delayed</h2>
+
+  <div class="gotcha">
+    <div class="gotcha-header"><div class="gotcha-icon">🐢</div><div class="gotcha-title">GitHub's cron is best-effort. Delays of 5–30 minutes are normal and documented.</div></div>
+    <div class="gotcha-body">
+      <p>GitHub's documentation explicitly states that scheduled workflows may be delayed during periods of high load on GitHub's infrastructure. In practice, delays of 5 to 30 minutes are common at peak hours (especially around :00 and :30 past the hour when everyone's jobs are set to run).</p>
+      <p><strong>This means GitHub Actions cron is not appropriate for time-sensitive tasks.</strong> If your job must fire within 60 seconds of the scheduled time, use a dedicated cron service (Linux cron, AWS EventBridge, Google Cloud Scheduler) and trigger the workflow via the GitHub API.</p>
+      <h3>Triggering a workflow via API (reliable alternative)</h3>
+      <pre><code><span class="comment"># Add workflow_dispatch to your workflow file</span>
+<span class="key">on:</span>
+  <span class="key">schedule:</span>
+    - <span class="key">cron:</span> <span class="str">'0 9 * * 1-5'</span>
+  <span class="key">workflow_dispatch:</span>  <span class="comment"># Allows manual + API triggering</span>
+
+<span class="comment"># Then trigger it precisely from your own cron server</span>
+curl -X POST \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/OWNER/REPO/actions/workflows/WORKFLOW_ID/dispatches \
+  -d '{"ref":"main"}'</code></pre>
+    </div>
+  </div>
+
+  <h2 id="gotcha4">⚠ Gotcha 4: Inactive Repos Get Their Schedules Disabled</h2>
+
+  <div class="gotcha">
+    <div class="gotcha-header"><div class="gotcha-icon">💤</div><div class="gotcha-title">GitHub disables scheduled workflows in repos with no activity for 60 days.</div></div>
+    <div class="gotcha-body">
+      <p>If a repository has had no commits, pull requests, or other activity for 60 days, GitHub will automatically disable its scheduled workflows. You'll receive an email notification, but if you miss it, your jobs simply stop running with no other warning.</p>
+      <p>To re-enable them, go to the <strong>Actions</strong> tab in your repository and click "Enable" on the disabled workflow.</p>
+      <h3>Workaround: Keep the repo active</h3>
+      <pre><code><span class="comment"># Add this step to your scheduled workflow to create a commit
+# that keeps the repo active</span>
+<span class="key">steps:</span>
+  - <span class="key">uses:</span> <span class="val">actions/checkout@v4</span>
+  - <span class="key">name:</span> <span class="val">Keep repo active</span>
+    <span class="key">run:</span> |
+      git config user.email "action@github.com"
+      git config user.name "GitHub Action"
+      git commit --allow-empty -m "chore: scheduled run $(date -u)"
+      git push</code></pre>
+    </div>
+  </div>
+
+  <h2 id="gotcha5">⚠ Gotcha 5: Day-of-Month + Day-of-Week Is OR, Not AND</h2>
+
+  <div class="gotcha">
+    <div class="gotcha-header"><div class="gotcha-icon">📅</div><div class="gotcha-title">Specifying both DOM and DOW doesn't mean "only when both match."</div></div>
+    <div class="gotcha-body">
+      <p>This is a standard cron behaviour that surprises people in every context, but it's especially painful in GitHub Actions because you can't easily test it. If you specify a non-wildcard value for <em>both</em> day-of-month and day-of-week, the job fires when <em>either</em> condition is true.</p>
+      <pre><code><span class="comment"># ❌ Intended: "the first Friday of every month"
+# ✅ Actual: "the 1st of every month" OR "every Friday"</span>
+- cron: '0 9 1 * 5'
+
+<span class="comment"># ✅ To get "first Friday of the month", check inside the workflow step</span></code></pre>
+      <h3>Correct approach for "first Friday of the month"</h3>
+      <pre><code><span class="key">on:</span>
+  <span class="key">schedule:</span>
+    <span class="comment">    # Run every Friday at 9am UTC</span>
+    - <span class="key">cron:</span> <span class="str">'0 9 * * 5'</span>
+
+<span class="key">jobs:</span>
+  <span class="key">first-friday-only:</span>
+    <span class="key">runs-on:</span> <span class="val">ubuntu-latest</span>
+    <span class="key">steps:</span>
+      - <span class="key">name:</span> <span class="val">Check if first Friday</span>
+        <span class="key">run:</span> |
+          <span class="comment">          # Only proceed if the day of month is 1-7 (first week)</span>
+          DAY=$(date +%d)
+          if [ "$DAY" -gt 7 ]; then
+            echo "Not the first Friday — skipping"
+            exit 0
+          fi
+          echo "First Friday confirmed — running task"
+          ./monthly-task.sh</code></pre>
+    </div>
+  </div>
+
+  <h2 id="testing">How to Test Your Schedule Before Pushing</h2>
+
+  <p>Waiting for a cron job to fire to see if it works is painful. Here are three ways to test immediately:</p>
+
+  <h3>Method 1: Add workflow_dispatch and trigger manually</h3>
+  <pre><code><span class="key">on:</span>
+  <span class="key">schedule:</span>
+    - <span class="key">cron:</span> <span class="str">'0 9 * * 1-5'</span>
+  <span class="key">workflow_dispatch:</span>  <span class="comment"># ← add this line</span></code></pre>
+  <p>Now you can trigger the workflow manually from the Actions tab while you iterate, then remove <code>workflow_dispatch</code> when you're happy.</p>
+
+  <h3>Method 2: Temporarily set to */5 to verify it fires at all</h3>
+  <pre><code><span class="comment"># Set to every 5 minutes temporarily to confirm the workflow runs</span>
+- cron: '*/5 * * * *'
+
+<span class="comment"># Once confirmed, set it to your real schedule</span>
+- cron: '0 9 * * 1-5'</code></pre>
+
+  <h3>Method 3: Validate the expression before pushing</h3>
+  <p>Paste your expression into <a href="https://cronbuilder.dev">CronBuilder.dev</a> to see the next 10 UTC run times before you push. The expression <code>0 9 * * 1-5</code> is easy to confuse with <code>0 9 * * 1,5</code> (which runs on Mondays AND Fridays only, not every weekday).</p>
+
+  <h2 id="multiple">Running Multiple Schedules on One Workflow</h2>
+  <p>You can attach more than one cron expression to a single workflow. GitHub Actions will trigger the workflow on any matching schedule:</p>
+
+  <pre><code><span class="key">on:</span>
+  <span class="key">schedule:</span>
+    <span class="comment">    # Hourly during UK business hours on weekdays</span>
+    - <span class="key">cron:</span> <span class="str">'0 8-17 * * 1-5'</span>
+    <span class="comment">    # Once overnight for cleanup</span>
+    - <span class="key">cron:</span> <span class="str">'0 2 * * *'</span></code></pre>
+
+  <p>If you need to behave differently depending on which schedule triggered the run, use the <code>github.event.schedule</code> context:</p>
+
+  <pre><code><span class="key">steps:</span>
+  - <span class="key">name:</span> <span class="val">Check which schedule triggered this</span>
+    <span class="key">run:</span> |
+      if [ "${{ github.event.schedule }}" == "0 2 * * *" ]; then
+        echo "Running overnight cleanup"
+        ./cleanup.sh
+      else
+        echo "Running hourly sync"
+        ./sync.sh
+      fi</code></pre>
+
+  <div class="cta-box">
+    <h3>Build your schedule expression</h3>
+    <p>Use CronBuilder.dev to construct your cron expression, preview the next 10 UTC run times, and copy it directly in GitHub Actions format — with the single quotes already included.</p>
+    <a class="cta-btn" href="https://cronbuilder.dev">Build My Expression →</a>
+  </div>
+
+  <div class="callout blue" style="margin-top: 40px;">
+    <p><strong>Related:</strong> <a href="cron-job-not-running.html">Cron job not running?</a> — 10 reasons and how to fix. <a href="cron-vs-systemd-timers.html">Cron vs systemd timers</a> — when to use each on Linux.</p>
+  </div>
+
+</div>
+
+<footer>
+  <a href="https://cronbuilder.dev">CronBuilder.dev</a> · Free cron expression builder and explainer ·
+  <a href="https://cronbuilder.dev/blog/">More articles</a>
+</footer>
+
+<div id="consentBanner" class="consent-banner" role="dialog" aria-label="Analytics consent">
+  <p class="consent-text">We use Google Analytics to improve the site. <a href="https://cronbuilder.dev/privacy.html">Privacy</a></p>
+  <div class="consent-btns">
+    <button type="button" class="consent-btn accept" id="consentAccept">Accept</button>
+    <button type="button" class="consent-btn decline" id="consentDecline">Decline</button>
+  </div>
+</div>
+<script>
+(function(){var k='cronbuilder_analytics',id='G-5RNVMHRHLH';
+function load(){window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config',id);var s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+id;document.head.appendChild(s);}
+function set(v){try{localStorage.setItem(k,v);}catch(e){}var b=document.getElementById('consentBanner');if(b)b.classList.add('hidden');if(v==='accepted')load();}
+var b=document.getElementById('consentBanner'),a=document.getElementById('consentAccept'),d=document.getElementById('consentDecline');
+if(!b)return;try{var c=localStorage.getItem(k);if(c==='accepted'){load();b.classList.add('hidden');return;}if(c==='declined'){b.classList.add('hidden');return;}}catch(e){}
+if(a)a.onclick=function(){set('accepted');};if(d)d.onclick=function(){set('declined');};})();
+</script>
+
+</body>
+</html>
