@@ -1500,6 +1500,16 @@ renderNlSuggestions();
 renderHistory();
 const initialExpr = loadFromUrl();
 onExprInput(initialExpr);
+// Ensure tab title updates when page is opened with ?e= (e.g. shared link)
+if (initialExpr && initialExpr.trim()) {
+  (function(expr) {
+    var p = parseCron(expr);
+    if (p) {
+      var exp = buildExplanation(expr) || '—';
+      updatePageTitle(expr, exp);
+    }
+  })(initialExpr.trim());
+}
 onCompare();
 </script>
 </body>
