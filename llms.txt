@@ -1,0 +1,32 @@
+# CronBuilder.dev
+
+CronBuilder.dev is a free, client-side cron expression builder and explainer. No account, no backend.
+
+## Description
+
+Paste any cron expression to get a plain-English explanation. Use the visual builder to generate expressions, or type in natural language (e.g. "every 5 minutes", "weekdays at 9am"). See the next 10 scheduled run times. Export as Unix cron, Quartz/Spring, AWS EventBridge, GitHub Actions, Kubernetes, or node-cron. Validate with field-level error messages. Compare two expressions. All runs in the browser.
+
+## Main URL
+
+https://cronbuilder.dev/
+
+## Key pages
+
+- Tool (builder + explainer): https://cronbuilder.dev/
+- Blog: https://cronbuilder.dev/blog/
+- Privacy: https://cronbuilder.dev/privacy.html
+- Sitemap: https://cronbuilder.dev/sitemap.xml
+
+## Blog articles
+
+- Cron job not running: https://cronbuilder.dev/blog/cron-job-not-running.html
+- Cron vs systemd timers: https://cronbuilder.dev/blog/cron-vs-systemd-timers.html
+- GitHub Actions cron schedule: https://cronbuilder.dev/blog/github-actions-cron-schedule.html
+
+## Sharing
+
+Append ?e=<expression> to the main URL to open with an expression pre-filled and explained, e.g. https://cronbuilder.dev/?e=*/5%20*%20*%20*%20*
+
+## License
+
+Site and tool are free to use. See privacy page for data practices.
