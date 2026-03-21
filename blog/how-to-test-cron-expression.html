@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Test a Cron Expression Before Running It | CronBuilder.dev</title>
+<meta name="description" content="5 ways to test and validate a cron expression before it hits production — from online tools to dry-run commands and unit tests. Never deploy a broken cron schedule again.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://cronbuilder.dev/blog/how-to-test-cron-expression.html">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="How to Test a Cron Expression Before Running It">
+<meta property="og:description" content="5 ways to validate a cron expression before production — online testers, dry-run commands, unit tests, and more.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://cronbuilder.dev/blog/how-to-test-cron-expression.html">
+<meta property="og:image" content="https://cronbuilder.dev/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "How to Test a Cron Expression Before Running It",
+  "description": "5 methods to test and validate a cron expression before deploying to production, including online tools, command-line checks, and unit testing approaches.",
+  "author": {"@type":"Organization","name":"CronBuilder.dev"},
+  "publisher": {"@type":"Organization","name":"CronBuilder.dev","url":"https://cronbuilder.dev"},
+  "datePublished": "2026-03-21",
+  "dateModified": "2026-03-21",
+  "mainEntityOfPage": "https://cronbuilder.dev/blog/how-to-test-cron-expression.html"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I test a cron expression without running the actual job?",
+      "acceptedAnswer": {"@type":"Answer","text":"The easiest way is to use an online cron expression tester like cronbuilder.dev — paste your expression to see a plain-English explanation and the next 10 scheduled run times instantly. For command-line testing, you can use date calculations or tools like croniter (Python) to list upcoming runs without modifying your crontab."}
+    },
+    {
+      "@type": "Question",
+      "name": "How do I validate a cron expression syntax?",
+      "acceptedAnswer": {"@type":"Answer","text":"Paste it into cronbuilder.dev — the tool validates the syntax immediately and highlights any errors. You can also run echo '*/5 * * * * true' | crontab - to check if cron accepts the expression, then crontab -l to verify and crontab -r to remove it."}
+    },
+    {
+      "@type": "Question",
+      "name": "What is the fastest way to see the next run times for a cron expression?",
+      "acceptedAnswer": {"@type":"Answer","text":"Use cronbuilder.dev — paste any expression to see the next 10 run times in your selected timezone instantly, with no signup required. For scripting, use Python's croniter library: from croniter import croniter; list(croniter('*/5 * * * *').get_next(datetime) for _ in range(10))."}
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0d; --surface: #111318; --surface2: #181c23;
+    --border: #22283a; --border2: #2d3550;
+    --text: #cdd6f4; --muted: #7a8299;
+    --green: #a6e3a1; --yellow: #f9e2af; --blue: #89b4fa;
+    --teal: #94e2d5; --red: #f38ba8; --mauve: #cba6f7; --peach: #fab387;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.75; min-height: 100vh; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: var(--surface2); color: var(--green); padding: 2px 7px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.84em; }
+  pre { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 18px; overflow-x: auto; margin: 14px 0; }
+  pre code { background: none; padding: 0; font-size: 0.82rem; color: var(--text); }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { font-family: var(--font-ui); font-weight: 700; color: #fff; font-size: 1rem; }
+  .topbar-logo span { color: var(--green); }
+  .topbar-sep { color: #3d4461; }
+  .topbar-crumb { font-size: 0.8rem; color: var(--muted); }
+  .topbar-nav { margin-left: auto; display: flex; gap: 16px; font-size: 0.8rem; }
+  .topbar-nav a { color: var(--muted); }
+  .topbar-nav a:hover { color: var(--text); text-decoration: none; }
+  .article-wrap { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
+  .article-label { font-family: var(--font-mono); font-size: 0.72rem; color: var(--green); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 14px; }
+  h1 { font-family: var(--font-ui); font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; line-height: 1.15; color: #fff; margin-bottom: 18px; letter-spacing: -0.02em; }
+  .article-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 36px; display: flex; gap: 16px; flex-wrap: wrap; }
+  h2 { font-family: var(--font-ui); font-size: 1.3rem; font-weight: 700; color: #fff; margin: 40px 0 14px; padding-top: 8px; border-top: 1px solid var(--border); }
+  h3 { font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--text); margin: 24px 0 10px; }
+  p { color: var(--muted); margin-bottom: 14px; font-size: 0.93rem; line-height: 1.8; }
+  p strong { color: var(--text); }
+  ol { padding-left: 22px; color: var(--muted); font-size: 0.93rem; margin-bottom: 14px; }
+  ol li { margin-bottom: 8px; line-height: 1.8; }
+  .step { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px 28px; margin: 28px 0; }
+  .step-num { font-family: var(--font-mono); font-size: 0.72rem; color: var(--green); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+  .step h3 { margin-top: 0; font-size: 1.1rem; }
+  .callout { background: var(--surface2); border-left: 3px solid var(--yellow); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 18px 0; }
+  .callout p { margin: 0; font-size: 0.87rem; }
+  .callout strong { color: var(--yellow); }
+  .callout-blue { background: var(--surface2); border-left: 3px solid var(--blue); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 18px 0; }
+  .callout-blue p { margin: 0; font-size: 0.87rem; }
+  .callout-blue strong { color: var(--blue); }
+  .cta-inline { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 20px 24px; margin: 28px 0; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .cta-inline p { margin: 0; font-size: 0.87rem; color: var(--muted); }
+  .cta-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--green); color: #0a0b0d; font-family: var(--font-ui); font-size: 0.83rem; font-weight: 700; padding: 10px 18px; border-radius: 7px; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+  .cta-btn:hover { opacity: 0.88; text-decoration: none; }
+  .toc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin: 32px 0; }
+  .toc-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { font-size: 0.85rem; margin-bottom: 5px; color: var(--muted); }
+  .toc li a { color: var(--blue); }
+  footer { text-align: center; padding: 28px 24px; color: #3d4461; font-size: 0.75rem; border-top: 1px solid var(--border); }
+  footer a { color: var(--muted); }
+  @media (max-width: 600px) { .article-wrap { padding: 36px 16px 60px; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="topbar-logo">Cron<span>Builder</span>.dev</a>
+  <span class="topbar-sep">/</span>
+  <a href="/blog/" class="topbar-crumb">blog</a>
+  <span class="topbar-sep">/</span>
+  <span class="topbar-crumb">how-to-test-cron-expression</span>
+  <nav class="topbar-nav">
+    <a href="/blog/">Blog</a>
+    <a href="/">Builder →</a>
+  </nav>
+</div>
+
+<div class="article-wrap">
+
+  <div class="article-label">// guide</div>
+  <h1>How to Test a Cron Expression Before Running It</h1>
+  <div class="article-meta">
+    <span>Published March 21, 2026</span>
+    <span>·</span>
+    <span>CronBuilder.dev</span>
+  </div>
+
+  <p>Deploying a broken cron schedule is a special kind of painful — the job either runs at the wrong time, or doesn't run at all, and you don't find out until something is noticeably missing. The good news: there are several fast, low-effort ways to validate a cron expression before it ever touches a server.</p>
+
+  <div class="toc">
+    <div class="toc-label">// 5 methods covered</div>
+    <ol>
+      <li><a href="#online-tester">Use an online cron expression tester</a></li>
+      <li><a href="#dry-run">Dry-run with a throw-away crontab</a></li>
+      <li><a href="#croniter">Use croniter (Python) to list next runs</a></li>
+      <li><a href="#unit-test">Unit-test with node-cron / cron-parser</a></li>
+      <li><a href="#monitoring">Use a monitoring ping to confirm it ran</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <div class="step" id="online-tester">
+    <div class="step-num">// method 1 — fastest</div>
+    <h3>Use an Online Cron Expression Tester</h3>
+    <p>The quickest way to validate any expression is to paste it into an online tool that shows the next run times immediately. No install, no terminal, no risk.</p>
+    <p><strong>CronBuilder.dev</strong> (this site) does exactly this — paste any 5-field or 6-field expression and see:</p>
+    <ol>
+      <li>A plain-English explanation of what the schedule means</li>
+      <li>A field-by-field breakdown (which part means what)</li>
+      <li>The next 10 scheduled run times in your timezone</li>
+      <li>Immediate syntax validation — errors are highlighted</li>
+    </ol>
+    <p>This catches the two most common mistakes before anything runs: wrong field order and off-by-one errors (e.g. using 24 for midnight instead of 0).</p>
+    <div class="cta-inline">
+      <p>Paste your expression here to validate it instantly.</p>
+      <a href="/" class="cta-btn">Open Cron Tester →</a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <div class="step" id="dry-run">
+    <div class="step-num">// method 2 — linux terminal</div>
+    <h3>Dry-run with a Throw-away Crontab</h3>
+    <p>If you want to confirm the actual cron daemon accepts the syntax, install a temporary crontab, verify, then remove it. This is safe — it doesn't run the job, it just registers the schedule.</p>
+    <pre><code># 1. Add a safe test cron — echo is harmless
+echo "*/5 * * * * echo 'test'" | crontab -
+
+# 2. Verify cron accepted it
+crontab -l
+
+# 3. Remove the test crontab
+crontab -r</code></pre>
+    <p>If <code>crontab -l</code> shows your expression correctly, the syntax is valid. If cron rejects it, it will print an error to stderr.</p>
+    <div class="callout">
+      <p><strong>Warning:</strong> <code>crontab -r</code> removes the <em>entire</em> crontab, not just the test line. If you have other jobs configured, save your current crontab first: <code>crontab -l &gt; ~/crontab.bak</code></p>
+    </div>
+
+    <h3>Test with a high-frequency interval for rapid feedback</h3>
+    <p>If you want to actually <em>watch</em> the job fire, temporarily set the interval to every minute and observe:</p>
+    <pre><code># Replace your real schedule with * * * * * temporarily
+* * * * * /path/to/script.sh >> /tmp/cron-test.log 2>&1
+
+# Watch the log in real time
+tail -f /tmp/cron-test.log</code></pre>
+    <p>Wait one minute. If the log updates, your job is running. Restore your real schedule once confirmed.</p>
+    <div class="callout">
+      <p><strong>Tip:</strong> Always redirect stdout <em>and</em> stderr to a log file during testing: <code>&gt;&gt; /tmp/cron-test.log 2&gt;&amp;1</code>. Cron swallows output silently by default, which is why debugging is hard. The <code>2&gt;&amp;1</code> captures errors too.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <div class="step" id="croniter">
+    <div class="step-num">// method 3 — python</div>
+    <h3>Use croniter (Python) to List Next Run Times</h3>
+    <p>If you're working in Python, <code>croniter</code> is the fastest way to compute next runs programmatically — useful for testing in scripts, CI pipelines, or notebooks.</p>
+    <pre><code>pip install croniter</code></pre>
+    <pre><code>from croniter import croniter
+from datetime import datetime
+
+expr = "0 9 * * 1-5"  # your expression here
+base = datetime.now()
+it = croniter(expr, base)
+
+print(f"Next 10 runs for: {expr}\n")
+for _ in range(10):
+    print(it.get_next(datetime).strftime("%Y-%m-%d %H:%M %A"))</code></pre>
+    <p>Output for <code>0 9 * * 1-5</code> (weekdays at 9am):</p>
+    <pre><code>2026-03-23 09:00 Monday
+2026-03-24 09:00 Tuesday
+2026-03-25 09:00 Wednesday
+2026-03-26 09:00 Thursday
+2026-03-27 09:00 Friday
+2026-03-30 09:00 Monday
+...</code></pre>
+    <p>You can also validate that a specific timestamp <em>should have</em> triggered using <code>croniter.match()</code>:</p>
+    <pre><code>from croniter import croniter
+
+# Did this expression match at exactly 9am on Monday?
+print(croniter.match("0 9 * * 1-5", datetime(2026, 3, 23, 9, 0)))  # True
+print(croniter.match("0 9 * * 1-5", datetime(2026, 3, 22, 9, 0)))  # False (Sunday)</code></pre>
+    <p>This is particularly powerful for writing unit tests for schedule logic.</p>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <div class="step" id="unit-test">
+    <div class="step-num">// method 4 — javascript / node</div>
+    <h3>Unit-test with cron-parser (Node.js)</h3>
+    <p>In Node.js projects, <code>cron-parser</code> lets you iterate over next runs in tests. This is the approach to use when your cron expression lives in config and you want it covered by CI.</p>
+    <pre><code>npm install cron-parser</code></pre>
+    <pre><code>const parser = require('cron-parser');
+
+const expr = '0 9 * * 1-5';
+const interval = parser.parseExpression(expr, {
+  tz: 'America/New_York'
+});
+
+console.log('Next 5 runs:');
+for (let i = 0; i < 5; i++) {
+  console.log(interval.next().toDate());
+}</code></pre>
+    <p>For unit tests with Jest or Vitest:</p>
+    <pre><code>import parser from 'cron-parser';
+import { describe, it, expect } from 'vitest';
+
+describe('report schedule', () => {
+  it('should run on weekdays only', () => {
+    const interval = parser.parseExpression('0 9 * * 1-5');
+    const next = interval.next().toDate();
+    const day = next.getDay(); // 0=Sun, 6=Sat
+    expect(day).toBeGreaterThan(0);
+    expect(day).toBeLessThan(6);
+  });
+
+  it('should run at 9am', () => {
+    const interval = parser.parseExpression('0 9 * * 1-5');
+    const next = interval.next().toDate();
+    expect(next.getHours()).toBe(9);
+    expect(next.getMinutes()).toBe(0);
+  });
+});</code></pre>
+    <p>This approach integrates cron validation directly into your test suite so a misconfigured schedule breaks the build rather than silently misfiring in production.</p>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <div class="step" id="monitoring">
+    <div class="step-num">// method 5 — production verification</div>
+    <h3>Use a Monitoring Ping to Confirm It Actually Ran</h3>
+    <p>Once the job is deployed, the safest ongoing test is to have it ping a monitoring URL each time it runs. If the ping doesn't arrive within the expected window, you get an alert. This is called a <strong>heartbeat check</strong> or dead man's switch.</p>
+    <pre><code># In your crontab, add a curl ping after your job succeeds
+*/5 * * * * /path/to/script.sh && curl -fsS https://hc-ping.com/YOUR-UUID</code></pre>
+    <p>The <code>&&</code> means the ping only fires if your script exits with code 0 (success). If the script fails or the cron doesn't run, the monitoring service alerts you.</p>
+    <div class="callout-blue">
+      <p><strong>Free options:</strong> <a href="https://healthchecks.io" target="_blank" rel="noopener noreferrer">Healthchecks.io</a> offers a generous free tier (20 checks). <a href="https://betterstack.com/better-cron" target="_blank" rel="noopener noreferrer">BetterStack</a> and <a href="https://cronitor.io" target="_blank" rel="noopener noreferrer">Cronitor</a> both offer free tiers with alerts via email and Slack.</p>
+    </div>
+    <p>This is the only method that catches <em>runtime</em> failures (script errors, environment issues, server downtime) rather than just syntax problems. For any production job you care about, add a monitoring ping.</p>
+  </div>
+
+  <!-- ═══════════════════════════════ -->
+  <h2>Summary: Which Method to Use</h2>
+
+  <p><strong>Validating syntax quickly:</strong> Use cronbuilder.dev — paste, see the explanation and next run times, done. Takes 10 seconds.</p>
+  <p><strong>Confirming the cron daemon accepts it:</strong> Use the throw-away crontab dry-run. Safe, takes 30 seconds.</p>
+  <p><strong>Scripting / automation / CI:</strong> Use croniter (Python) or cron-parser (Node.js) in your test suite.</p>
+  <p><strong>Production confidence:</strong> Add a monitoring ping. It's the only method that tells you if the job actually ran in production, not just whether the syntax was valid.</p>
+
+  <p style="margin-top: 24px;">See also: <a href="/blog/cron-job-not-running.html">Cron job not running? 10 reasons why</a> &nbsp;·&nbsp; <a href="/blog/cron-expression-cheat-sheet.html">Cron expression cheat sheet</a> &nbsp;·&nbsp; <a href="/blog/github-actions-cron-schedule.html">GitHub Actions cron schedule guide</a> &nbsp;·&nbsp; <a href="/cron/">Expression reference library</a></p>
+
+</div>
+
+<footer>
+  <a href="/">CronBuilder.dev</a> &nbsp;·&nbsp; Free forever &nbsp;·&nbsp; No login &nbsp;·&nbsp;
+  <a href="/blog/">Blog</a> &nbsp;·&nbsp; <a href="/sitemap.xml">Sitemap</a>
+</footer>
+
+</body>
+</html>

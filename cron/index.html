@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cron Expression Examples & Reference — Common Schedules | CronBuilder.dev</title>
+<meta name="description" content="A complete library of cron expression examples. Every 5 minutes, hourly, daily, weekly, weekdays-only, first of month — with plain-English explanations and copy-paste code.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://cronbuilder.dev/cron/">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cronbuilder.dev/cron/">
+<meta property="og:title" content="Cron Expression Examples & Reference">
+<meta property="og:description" content="Common cron schedules with plain-English explanations, field breakdowns, and copy-paste code for every platform.">
+<meta property="og:image" content="https://cronbuilder.dev/og-image.png">
+<meta property="og:site_name" content="CronBuilder.dev">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type":"ListItem","position":1,"name":"Home","item":"https://cronbuilder.dev/"},
+    {"@type":"ListItem","position":2,"name":"Cron Expression Reference","item":"https://cronbuilder.dev/cron/"}
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0d; --surface: #111318; --surface2: #181c23; --surface3: #1e2330;
+    --border: #22283a; --border2: #2d3550;
+    --text: #cdd6f4; --muted: #7a8299; --dim: #3d4461;
+    --green: #a6e3a1; --yellow: #f9e2af; --blue: #89b4fa;
+    --teal: #94e2d5; --red: #f38ba8; --mauve: #cba6f7; --peach: #fab387;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 14px; line-height: 1.7; min-height: 100vh; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: var(--surface2); color: var(--green); padding: 2px 6px; border-radius: 4px; font-size: 0.88em; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { font-family: var(--font-ui); font-weight: 700; color: #fff; font-size: 1rem; }
+  .topbar-logo span { color: var(--green); }
+  .topbar-sep { color: var(--dim); }
+  .topbar-crumb { font-size: 0.8rem; color: var(--muted); }
+  .topbar-nav { margin-left: auto; display: flex; gap: 16px; font-size: 0.8rem; }
+  .topbar-nav a { color: var(--muted); }
+  .topbar-nav a:hover { color: var(--text); text-decoration: none; }
+  .hero { max-width: 860px; margin: 0 auto; padding: 56px 24px 32px; }
+  .hero-label { font-size: 0.72rem; color: var(--green); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; }
+  h1 { font-family: var(--font-ui); font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; color: #fff; margin-bottom: 12px; letter-spacing: -0.02em; }
+  h1 em { font-style: normal; color: var(--green); }
+  .hero p { color: var(--muted); font-size: 0.88rem; max-width: 580px; line-height: 1.8; }
+  .main { max-width: 860px; margin: 0 auto; padding: 8px 24px 64px; }
+  h2 { font-family: var(--font-ui); font-size: 1rem; font-weight: 600; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.72rem; margin: 32px 0 12px; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin-bottom: 8px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; display: block; text-decoration: none; transition: border-color .15s; }
+  .card:hover { border-color: var(--border2); text-decoration: none; }
+  .card-expr { font-size: 0.95rem; color: var(--green); margin-bottom: 6px; letter-spacing: 0.04em; }
+  .card-title { font-family: var(--font-ui); font-size: 0.9rem; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .card-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.6; }
+  .cta-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 32px; text-align: center; margin-top: 40px; }
+  .cta-section h3 { font-family: var(--font-ui); font-size: 1.1rem; color: #fff; margin-bottom: 10px; }
+  .cta-section p { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; }
+  .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: #0a0b0d; font-family: var(--font-ui); font-size: 0.88rem; font-weight: 700; padding: 12px 22px; border-radius: 8px; text-decoration: none; }
+  .cta-btn:hover { opacity: 0.88; text-decoration: none; }
+  footer { text-align: center; padding: 28px 24px; color: var(--dim); font-size: 0.75rem; border-top: 1px solid var(--border); }
+  footer a { color: var(--muted); }
+  @media (max-width: 600px) { .hero, .main { padding-left: 16px; padding-right: 16px; } .card-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="topbar-logo">Cron<span>Builder</span>.dev</a>
+  <span class="topbar-sep">/</span>
+  <span class="topbar-crumb">cron expression reference</span>
+  <nav class="topbar-nav">
+    <a href="/blog/">Blog</a>
+    <a href="/">Builder →</a>
+  </nav>
+</div>
+
+<div class="hero">
+  <div class="hero-label">// expression reference library</div>
+  <h1>Cron Expression<br><em>Examples & Reference</em></h1>
+  <p>Common cron schedules with plain-English explanations, field-by-field breakdowns, and copy-paste code for every major platform. Click any expression for full details.</p>
+</div>
+
+<div class="main">
+
+  <h2>// sub-hourly schedules</h2>
+  <div class="card-grid">
+    <a href="/cron/every-minute/" class="card">
+      <div class="card-expr"><code>* * * * *</code></div>
+      <div class="card-title">Every Minute</div>
+      <div class="card-desc">Maximum cron frequency — fires 1,440 times per day</div>
+    </a>
+    <a href="/cron/every-5-minutes/" class="card">
+      <div class="card-expr"><code>*/5 * * * *</code></div>
+      <div class="card-title">Every 5 Minutes</div>
+      <div class="card-desc">At :00, :05, :10 … :55 past every hour</div>
+    </a>
+    <a href="/cron/every-15-minutes/" class="card">
+      <div class="card-expr"><code>*/15 * * * *</code></div>
+      <div class="card-title">Every 15 Minutes</div>
+      <div class="card-desc">At :00, :15, :30, and :45 past every hour</div>
+    </a>
+    <a href="/cron/every-30-minutes/" class="card">
+      <div class="card-expr"><code>*/30 * * * *</code></div>
+      <div class="card-title">Every 30 Minutes</div>
+      <div class="card-desc">At :00 and :30 past every hour — twice per hour</div>
+    </a>
+  </div>
+
+  <h2>// hourly &amp; multi-hour schedules</h2>
+  <div class="card-grid">
+    <a href="/cron/every-hour/" class="card">
+      <div class="card-expr"><code>0 * * * *</code></div>
+      <div class="card-title">Every Hour</div>
+      <div class="card-desc">At the top of every hour — 24 times per day</div>
+    </a>
+    <a href="/cron/every-6-hours/" class="card">
+      <div class="card-expr"><code>0 */6 * * *</code></div>
+      <div class="card-title">Every 6 Hours</div>
+      <div class="card-desc">At 00:00, 06:00, 12:00, and 18:00 daily</div>
+    </a>
+  </div>
+
+  <h2>// daily schedules</h2>
+  <div class="card-grid">
+    <a href="/cron/every-day/" class="card">
+      <div class="card-expr"><code>0 0 * * *</code></div>
+      <div class="card-title">Every Day at Midnight</div>
+      <div class="card-desc">Once per day at 00:00 — equivalent to @daily</div>
+    </a>
+    <a href="/cron/daily-9am/" class="card">
+      <div class="card-expr"><code>0 9 * * *</code></div>
+      <div class="card-title">Daily at 9am</div>
+      <div class="card-desc">Once per day at 9:00am in the server timezone</div>
+    </a>
+  </div>
+
+  <h2>// weekly schedules</h2>
+  <div class="card-grid">
+    <a href="/cron/weekdays-9am/" class="card">
+      <div class="card-expr"><code>0 9 * * 1-5</code></div>
+      <div class="card-title">Weekdays at 9am</div>
+      <div class="card-desc">Monday through Friday only — skips weekends</div>
+    </a>
+    <a href="/cron/every-monday/" class="card">
+      <div class="card-expr"><code>0 9 * * 1</code></div>
+      <div class="card-title">Every Monday</div>
+      <div class="card-desc">Once per week on Monday at 9:00am</div>
+    </a>
+    <a href="/cron/every-sunday/" class="card">
+      <div class="card-expr"><code>0 0 * * 0</code></div>
+      <div class="card-title">Every Sunday</div>
+      <div class="card-desc">Once per week on Sunday at midnight — @weekly</div>
+    </a>
+  </div>
+
+  <h2>// monthly schedules</h2>
+  <div class="card-grid">
+    <a href="/cron/first-of-month/" class="card">
+      <div class="card-expr"><code>0 0 1 * *</code></div>
+      <div class="card-title">First of Every Month</div>
+      <div class="card-desc">At midnight on the 1st — equivalent to @monthly</div>
+    </a>
+  </div>
+
+  <div class="cta-section">
+    <h3>Don't see the schedule you need?</h3>
+    <p>The free visual builder handles any cron expression — paste one for a plain-English explanation, or click your way to a custom schedule. Supports Unix, Quartz, AWS EventBridge, GitHub Actions, and Kubernetes formats.</p>
+    <a href="/" class="cta-btn">Open the Cron Builder →</a>
+  </div>
+
+</div>
+
+<footer>
+  <a href="/">CronBuilder.dev</a> &nbsp;·&nbsp; Free forever &nbsp;·&nbsp; No login &nbsp;·&nbsp;
+  <a href="/blog/">Blog</a> &nbsp;·&nbsp; <a href="/sitemap.xml">Sitemap</a>
+</footer>
+
+</body>
+</html>

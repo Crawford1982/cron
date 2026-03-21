@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cron Expression Daily at 9am (0 9 * * *) | CronBuilder.dev</title>
+<meta name="description" content="The cron expression 0 9 * * * runs a job every day at 9:00am in the server's configured timezone.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://cronbuilder.dev/cron/daily-9am/">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cronbuilder.dev/cron/daily-9am/">
+<meta property="og:title" content="Cron Expression Daily at 9am (0 9 * * *)">
+<meta property="og:description" content="The cron expression 0 9 * * * runs a job every day at 9:00am in the server's configured timezone.">
+<meta property="og:image" content="https://cronbuilder.dev/og-image.png">
+<meta property="og:site_name" content="CronBuilder.dev">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {"@type":"Question","name":"How do I run a cron job at 9am every weekday only?","acceptedAnswer":{"@type":"Answer","text":"Use 0 9 * * 1-5 — the 1-5 in the weekday field restricts it to Monday through Friday. See the Weekdays at 9am page."}},
+        {"@type":"Question","name":"How do I set the timezone for a cron job?","acceptedAnswer":{"@type":"Answer","text":"In Linux crontab, add CRON_TZ=America/New_York before your cron line. In Kubernetes, set .spec.timeZone. In GitHub Actions all schedules are UTC. In AWS EventBridge, use cron() expressions in UTC."}},
+        {"@type":"Question","name":"How do I change the hour from 9am to another time?","acceptedAnswer":{"@type":"Answer","text":"Replace the 9 with your target hour in 24-hour format: 0 14 * * * runs at 2:00pm, 0 20 * * * runs at 8:00pm."}}
+      ]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type":"ListItem","position":1,"name":"Home","item":"https://cronbuilder.dev/"},
+        {"@type":"ListItem","position":2,"name":"Cron Expressions","item":"https://cronbuilder.dev/cron/"},
+        {"@type":"ListItem","position":3,"name":"Cron Expression Daily at 9am","item":"https://cronbuilder.dev/cron/daily-9am/"}
+      ]
+    }
+  ]
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root {
+    --bg: #0a0b0d; --surface: #111318; --surface2: #181c23; --surface3: #1e2330;
+    --border: #22283a; --border2: #2d3550;
+    --text: #cdd6f4; --muted: #7a8299; --dim: #3d4461;
+    --green: #a6e3a1; --yellow: #f9e2af; --blue: #89b4fa;
+    --teal: #94e2d5; --red: #f38ba8; --mauve: #cba6f7; --peach: #fab387;
+    --font-mono: 'JetBrains Mono', monospace;
+    --font-ui: 'Syne', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-mono); font-size: 14px; line-height: 1.7; min-height: 100vh; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { background: var(--surface2); color: var(--green); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 0.88em; }
+  pre { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; overflow-x: auto; margin: 12px 0; }
+  pre code { background: none; padding: 0; font-size: 0.82rem; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; gap: 12px; }
+  .topbar-logo { font-family: var(--font-ui); font-weight: 700; color: #fff; font-size: 1rem; }
+  .topbar-logo span { color: var(--green); }
+  .topbar-sep { color: var(--dim); }
+  .topbar-crumb { font-size: 0.8rem; color: var(--muted); }
+  .topbar-nav { margin-left: auto; display: flex; gap: 16px; font-size: 0.8rem; }
+  .topbar-nav a { color: var(--muted); }
+  .topbar-nav a:hover { color: var(--text); text-decoration: none; }
+  .hero { max-width: 860px; margin: 0 auto; padding: 56px 24px 32px; }
+  .hero-label { font-size: 0.72rem; color: var(--green); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 12px; }
+  h1 { font-family: var(--font-ui); font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: #fff; margin-bottom: 14px; }
+  h1 em { font-style: normal; color: var(--green); font-size: 0.7em; display: block; margin-top: 4px; }
+  .hero-desc { color: var(--muted); font-size: 0.88rem; max-width: 580px; line-height: 1.8; margin-bottom: 24px; }
+  .cta-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--green); color: #0a0b0d; font-family: var(--font-ui); font-size: 0.88rem; font-weight: 700; padding: 12px 22px; border-radius: 8px; text-decoration: none; transition: opacity .15s; }
+  .cta-btn:hover { opacity: 0.88; text-decoration: none; }
+  .main { max-width: 860px; margin: 0 auto; padding: 8px 24px 64px; }
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 24px; }
+  .section-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
+  h2 { font-family: var(--font-ui); font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 12px; }
+  h3 { font-family: var(--font-ui); font-size: 0.95rem; font-weight: 600; color: var(--text); margin: 16px 0 8px; }
+  p { color: var(--muted); font-size: 0.85rem; line-height: 1.8; margin-bottom: 10px; }
+  p strong { color: var(--text); }
+  .field-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 12px 0; }
+  .field-table th { text-align: left; color: var(--muted); font-weight: 400; padding: 6px 10px; border-bottom: 1px solid var(--border); }
+  .field-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .field-table td:first-child { color: var(--muted); }
+  .field-table td:nth-child(2) { color: var(--green); font-weight: 500; }
+  .field-table td:last-child { color: var(--text); }
+  .run-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .run-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 5px 12px; font-size: 0.78rem; color: var(--teal); }
+  .platform-block { margin-bottom: 18px; }
+  .platform-label { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 8px; }
+  .related-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; text-decoration: none; display: block; transition: border-color .15s; }
+  .related-card:hover { border-color: var(--border2); text-decoration: none; }
+  .related-card-title { font-family: var(--font-ui); font-size: 0.85rem; color: #fff; margin-bottom: 4px; }
+  .related-card-expr { font-size: 0.75rem; color: var(--green); }
+  .faq-item { border-bottom: 1px solid var(--border); padding: 14px 0; }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q { font-family: var(--font-ui); font-size: 0.88rem; color: var(--text); margin-bottom: 6px; }
+  .faq-a { font-size: 0.83rem; color: var(--muted); line-height: 1.8; }
+  .expr-badge { display: inline-block; background: var(--surface3); border: 1px solid var(--border2); border-radius: 8px; padding: 10px 18px; font-size: 1.1rem; color: var(--green); margin-bottom: 20px; letter-spacing: 0.05em; }
+  footer { text-align: center; padding: 28px 24px; color: var(--dim); font-size: 0.75rem; border-top: 1px solid var(--border); }
+  footer a { color: var(--muted); }
+  @media (max-width: 600px) { .hero, .main { padding-left: 16px; padding-right: 16px; } .related-grid { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/" class="topbar-logo">Cron<span>Builder</span>.dev</a>
+  <span class="topbar-sep">/</span>
+  <span class="topbar-crumb">cron expressions</span>
+  <span class="topbar-sep">/</span>
+  <span class="topbar-crumb">daily-9am</span>
+  <nav class="topbar-nav">
+    <a href="/blog/">Blog</a>
+    <a href="/">Builder →</a>
+  </nav>
+</div>
+
+<div class="hero">
+  <div class="hero-label">// cron expression reference</div>
+  <h1>Cron Expression Daily at 9am<em>0 9 * * *</em></h1>
+  <div class="expr-badge"><code>0 9 * * *</code></div>
+  <p class="hero-desc"><strong>Plain English:</strong> Once per day — at 9:00am every day.</p>
+  <a href="https://cronbuilder.dev/?e=0%209%20%2A%20%2A%20%2A" class="cta-btn">Try it in the Builder →</a>
+</div>
+
+<div class="main">
+
+  <!-- EXPLANATION -->
+  <div class="section">
+    <div class="section-label">// how it works</div>
+    <h2>How <code>0 9 * * *</code> Works</h2>
+    <p><code>0 9 * * *</code> fires at 9:00am every day. <code>0</code> in the minute field means at the top of the hour; <code>9</code> in the hour field targets 9am. The three wildcards cover all days, months, and weekdays.</p>
+        <p>This is one of the most frequently used daily schedules — ideal for morning reports, digest emails, daily backups, and business-hours automation.</p>
+        <p><strong>Timezone tip:</strong> On cloud servers, the default timezone is usually UTC. If you need 9am US Eastern, use <code>CRON_TZ=America/New_York</code> (Linux crontab) or configure the timezone in your scheduler.</p>
+
+    <h3>Field Breakdown</h3>
+    <table class="field-table">
+      <thead><tr><th>Field</th><th>Value</th><th>Meaning</th></tr></thead>
+      <tbody><tr><td>Minute</td><td><code>0</code></td><td>At minute zero</td></tr>
+<tr><td>Hour</td><td><code>9</code></td><td>At 9am</td></tr>
+<tr><td>Day of month</td><td><code>*</code></td><td>Every day</td></tr>
+<tr><td>Month</td><td><code>*</code></td><td>Every month</td></tr>
+<tr><td>Weekday</td><td><code>*</code></td><td>Every day of week</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- NEXT RUNS -->
+  <div class="section">
+    <div class="section-label">// next scheduled runs (UTC)</div>
+    <h2>Next 10 Run Times</h2>
+    <p>Approximate run times starting from the current date. <a href="https://cronbuilder.dev/?e=0%209%20%2A%20%2A%20%2A">Open in the builder</a> to see exact run times in your timezone.</p>
+    <div class="run-list">
+      <span class="run-item">2026-03-21 09:00</span>
+<span class="run-item">2026-03-22 09:00</span>
+<span class="run-item">2026-03-23 09:00</span>
+<span class="run-item">2026-03-24 09:00</span>
+<span class="run-item">2026-03-25 09:00</span>
+<span class="run-item">2026-03-26 09:00</span>
+<span class="run-item">2026-03-27 09:00</span>
+<span class="run-item">2026-03-28 09:00</span>
+<span class="run-item">2026-03-29 09:00</span>
+<span class="run-item">2026-03-30 09:00</span>
+    </div>
+  </div>
+
+  <!-- PLATFORM EXAMPLES -->
+  <div class="section">
+    <div class="section-label">// copy-paste ready examples</div>
+    <h2>Platform Examples</h2>
+    <div class="platform-block">
+          <div class="platform-label">Linux / Unix crontab</div>
+          <pre><code>0 9 * * * /path/to/script.sh</code></pre>
+        </div>
+<div class="platform-block">
+          <div class="platform-label">GitHub Actions</div>
+          <pre><code>on:
+  schedule:
+    - cron: '0 9 * * *'  # 9:00 UTC</code></pre>
+        </div>
+<div class="platform-block">
+          <div class="platform-label">AWS EventBridge</div>
+          <pre><code>cron(0 9 * * ? *)</code></pre>
+        </div>
+<div class="platform-block">
+          <div class="platform-label">Kubernetes CronJob</div>
+          <pre><code>spec:
+  schedule: "0 9 * * *"</code></pre>
+        </div>
+<div class="platform-block">
+          <div class="platform-label">node-cron (Node.js)</div>
+          <pre><code>cron.schedule('0 9 * * *', () => { ... });</code></pre>
+        </div>
+<div class="platform-block">
+          <div class="platform-label">APScheduler (Python)</div>
+          <pre><code>scheduler.add_job(fn, 'cron', hour=9, minute=0)</code></pre>
+        </div>
+
+  </div>
+
+  <!-- RELATED -->
+  <div class="section">
+    <div class="section-label">// related expressions</div>
+    <h2>Related Cron Expressions</h2>
+    <div class="related-grid">
+      <a href="/cron/weekdays-9am/" class="related-card"><div class="related-card-title">Weekdays at 9am</div><div class="related-card-expr"><code>0 9 * * 1-5</code></div></a>
+<a href="/cron/every-day/" class="related-card"><div class="related-card-title">Every Day at Midnight</div><div class="related-card-expr"><code>0 0 * * *</code></div></a>
+<a href="/cron/every-hour/" class="related-card"><div class="related-card-title">Every Hour</div><div class="related-card-expr"><code>0 * * * *</code></div></a>
+<a href="/cron/first-of-month/" class="related-card"><div class="related-card-title">First of Every Month</div><div class="related-card-expr"><code>0 0 1 * *</code></div></a>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="section">
+    <div class="section-label">// frequently asked questions</div>
+    <h2>FAQ</h2>
+    <div class="faq-item"><div class="faq-q">How do I run a cron job at 9am every weekday only?</div><div class="faq-a">Use 0 9 * * 1-5 — the 1-5 in the weekday field restricts it to Monday through Friday. See the Weekdays at 9am page.</div></div>
+<div class="faq-item"><div class="faq-q">How do I set the timezone for a cron job?</div><div class="faq-a">In Linux crontab, add CRON_TZ=America/New_York before your cron line. In Kubernetes, set .spec.timeZone. In GitHub Actions all schedules are UTC. In AWS EventBridge, use cron() expressions in UTC.</div></div>
+<div class="faq-item"><div class="faq-q">How do I change the hour from 9am to another time?</div><div class="faq-a">Replace the 9 with your target hour in 24-hour format: 0 14 * * * runs at 2:00pm, 0 20 * * * runs at 8:00pm.</div></div>
+  </div>
+
+  <!-- CTA -->
+  <div class="section" style="text-align:center; padding: 36px;">
+    <h2 style="margin-bottom:10px;">Build or explain any cron expression</h2>
+    <p style="margin-bottom:20px;">Use the free visual builder — paste an expression for a plain-English explanation, or click your way to a schedule. See the next 10 run times. No login.</p>
+    <a href="https://cronbuilder.dev/?e=0%209%20%2A%20%2A%20%2A" class="cta-btn">Open CronBuilder →</a>
+  </div>
+
+</div>
+
+<footer>
+  <a href="/">CronBuilder.dev</a> &nbsp;·&nbsp; Free forever &nbsp;·&nbsp; No login &nbsp;·&nbsp;
+  <a href="/blog/">Blog</a> &nbsp;·&nbsp; <a href="/sitemap.xml">Sitemap</a>
+</footer>
+
+</body>
+</html>
