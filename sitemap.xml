@@ -18,27 +18,27 @@
   <!-- ═══ BLOG ═══ -->
   <url>
     <loc>https://cronbuilder.dev/blog/</loc>
-    <lastmod>2026-03-21</lastmod>
+    <lastmod>2026-03-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://cronbuilder.dev/blog/cron-job-not-running.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <lastmod>2026-03-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://cronbuilder.dev/blog/cron-vs-systemd-timers.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <lastmod>2026-03-30</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://cronbuilder.dev/blog/github-actions-cron-schedule.html</loc>
-    <lastmod>2026-03-08</lastmod>
+    <lastmod>2026-03-30</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://cronbuilder.dev/blog/cron-expression-cheat-sheet.html</loc>
