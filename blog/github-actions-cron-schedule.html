@@ -126,6 +126,9 @@
   .toc ol { padding-left: 18px; }
   .toc li { margin-bottom: 5px; }
   .toc a { font-size: 0.87rem; color: var(--blue); text-decoration: none; }
+  .article-figure { margin: 20px 0 30px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .article-figure img { display: block; width: 100%; height: auto; }
+  .article-figure figcaption { font-size: 0.78rem; color: var(--muted); padding: 10px 14px; border-top: 1px solid var(--border); }
 
   .cta-box { background: linear-gradient(135deg, #151b2e, #1a2040); border: 1px solid #2d3860; border-radius: 12px; padding: 28px; text-align: center; margin: 48px 0; }
   .cta-box h3 { font-family: var(--font-ui); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
@@ -167,11 +170,16 @@
   </div>
 
   <p>GitHub Actions makes it easy to schedule automated workflows — but it comes with a handful of sharp edges that catch almost every developer at least once. This guide covers everything from basic syntax to the 5 gotchas that explain why your scheduled workflow isn't running when you expect it to.</p>
+  <figure class="article-figure">
+    <img src="/assets/img/github-actions-cron-flow.svg" width="1200" height="630" alt="GitHub Actions cron flow showing schedule trigger, UTC evaluation, and delayed run behavior">
+    <figcaption>GitHub scheduled workflows: cron trigger -> UTC evaluation -> queued run (often delayed at peak load).</figcaption>
+  </figure>
 
   <div class="toc">
     <div class="toc-title">// contents</div>
     <ol>
       <li><a href="#basic">Basic syntax</a></li>
+      <li><a href="#scheduler-docs">GitHub scheduler docs essentials</a></li>
       <li><a href="#expressions">Ready-to-use expressions</a></li>
       <li><a href="#gotcha1">Gotcha 1: UTC only</a></li>
       <li><a href="#gotcha2">Gotcha 2: 5-minute minimum</a></li>
@@ -204,6 +212,25 @@
 
   <div class="callout blue">
     <p><strong>The expression must be in single quotes.</strong> GitHub Actions YAML is strict about this — unquoted cron expressions with <code>*</code> can cause YAML parse errors on some parsers.</p>
+  </div>
+
+  <h2 id="scheduler-docs">GitHub Scheduler Docs Essentials</h2>
+  <p>If you searched for "GitHub scheduler" or "GitHub Actions schedule cron documentation", this is the exact behavior you need to remember: scheduled workflows use the <code>on.schedule</code> trigger with cron syntax, always in UTC, and GitHub may delay execution during peak load.</p>
+  <pre><code><span class="comment"># Minimal docs-style schedule trigger</span>
+<span class="key">on:</span>
+  <span class="key">schedule:</span>
+    - <span class="key">cron:</span> <span class="str">'*/5 * * * *'</span></code></pre>
+  <p>You can detect which schedule fired your workflow using <code>github.event.schedule</code>, which is useful when one workflow has multiple cron entries:</p>
+  <pre><code><span class="key">steps:</span>
+  - <span class="key">name:</span> <span class="val">Branch logic by schedule</span>
+    <span class="key">run:</span> |
+      if [ "${{ github.event.schedule }}" = "*/5 * * * *" ]; then
+        echo "High-frequency task"
+      else
+        echo "Default schedule path"
+      fi</code></pre>
+  <div class="callout blue">
+    <p><strong>Need to verify syntax first?</strong> Use <a href="https://cronbuilder.dev/cron/">Cron expression examples</a> for copy-paste patterns, then validate exact next run times in the <a href="https://cronbuilder.dev">CronBuilder tool</a>.</p>
   </div>
 
   <h2 id="expressions">Ready-to-Use Expressions for GitHub Actions</h2>
@@ -394,7 +421,7 @@ curl -X POST \
   </div>
 
   <div class="callout blue" style="margin-top: 40px;">
-    <p><strong>Related:</strong> <a href="cron-job-not-running.html">Cron job not running?</a> — 10 reasons and how to fix. <a href="cron-vs-systemd-timers.html">Cron vs systemd timers</a> — when to use each on Linux.</p>
+    <p><strong>Related:</strong> <a href="cron-job-not-running.html">Cron job not running?</a> — 10 reasons and how to fix. <a href="cron-vs-systemd-timers.html">Cron vs systemd timers</a> — when to use each on Linux. <a href="https://cronbuilder.dev/cron/every-5-minutes/">Every 5 minutes cron</a> and <a href="https://cronbuilder.dev/cron/weekdays-9am/">weekdays at 9am cron</a> are both common GitHub Actions schedules.</p>
   </div>
 
 </div>

@@ -23,7 +23,7 @@
   "author": { "@type": "Organization", "name": "CronBuilder.dev" },
   "publisher": { "@type": "Organization", "name": "CronBuilder.dev", "url": "https://cronbuilder.dev" },
   "datePublished": "2026-03-08",
-  "dateModified": "2026-03-30",
+  "dateModified": "2026-04-17",
   "mainEntityOfPage": "https://cronbuilder.dev/blog/cron-vs-systemd-timers.html"
 }
 </script>
@@ -129,6 +129,9 @@
   .toc ol { padding-left: 18px; }
   .toc li { margin-bottom: 5px; }
   .toc a { font-size: 0.87rem; color: var(--blue); text-decoration: none; }
+  .article-figure { margin: 20px 0 30px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .article-figure img { display: block; width: 100%; height: auto; }
+  .article-figure figcaption { font-size: 0.78rem; color: var(--muted); padding: 10px 14px; border-top: 1px solid var(--border); }
 
   .cta-box { background: linear-gradient(135deg, #151b2e, #1a2040); border: 1px solid #2d3860; border-radius: 12px; padding: 28px; text-align: center; margin: 48px 0; }
   .cta-box h3 { font-family: var(--font-ui); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
@@ -173,18 +176,31 @@
   <p>Cron has been scheduling Linux tasks since 1975. systemd timers arrived around 2010 and are now the default on every major Linux distribution. So which should you actually use?</p>
 
   <p>The honest answer: <strong>cron is still great for simple tasks</strong>, but systemd timers win on every objective measure for production services. Here's the full comparison.</p>
+  <figure class="article-figure">
+    <img src="/assets/img/cron-vs-systemd-decision.svg" width="1200" height="630" alt="Decision diagram comparing when to use cron versus systemd timers">
+    <figcaption>Decision map: use cron for portability and quick setup, systemd timers for observability and recovery in production.</figcaption>
+  </figure>
 
   <div class="toc">
     <div class="toc-title">// contents</div>
     <ol>
+      <li><a href="#update-2026">What's changed in 2026</a></li>
       <li><a href="#comparison">Feature comparison</a></li>
       <li><a href="#syntax">Syntax side-by-side</a></li>
+      <li><a href="#mapping">Cron to OnCalendar mapping</a></li>
       <li><a href="#logging">Logging and observability</a></li>
       <li><a href="#dependencies">Dependencies and ordering</a></li>
       <li><a href="#missed">Handling missed runs</a></li>
       <li><a href="#systemd-setup">Setting up a systemd timer from scratch</a></li>
+      <li><a href="#migration">Migration playbook: cron to systemd</a></li>
       <li><a href="#verdict">When to use each</a></li>
     </ol>
+  </div>
+
+  <h2 id="update-2026">2026 Update: What Changed</h2>
+  <p>The core tools have not changed — cron is still simple and reliable for small jobs, while systemd timers remain stronger for production-grade scheduling. What <em>has</em> changed in 2026 is expectations: teams now expect first-class observability, dependency-aware execution, and missed-run recovery by default.</p>
+  <div class="callout yellow">
+    <p><strong>Practical 2026 default:</strong> for infrastructure or customer-facing workflows, use systemd timers unless you have a clear portability reason to stay on cron. For quick personal automation, cron is still perfect.</p>
   </div>
 
   <h2 id="comparison">Feature Comparison</h2>
@@ -248,6 +264,11 @@
         <td><span class="win">✓ macOS, BSDs, Solaris...</span></td>
         <td><span class="lose">Linux only</span></td>
       </tr>
+      <tr>
+        <td class="feature">Best fit in 2026</td>
+        <td><span class="draw">Personal scripts, portability, quick setup</span></td>
+        <td><span class="win">✓ Production services, ops-heavy workloads</span></td>
+      </tr>
     </tbody>
   </table>
 
@@ -306,6 +327,46 @@ Persistent=true</code></pre>
   <div class="callout blue">
     <p><strong>Validate cron expressions</strong> before converting them. Paste into <a href="https://cronbuilder.dev">CronBuilder.dev</a> to confirm the schedule is correct — then translate to systemd syntax.</p>
   </div>
+
+  <h2 id="mapping">Cron to OnCalendar Mapping</h2>
+  <p>Most migration mistakes happen during syntax translation. Use this quick map when converting common cron expressions to systemd <code>OnCalendar</code>:</p>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Cron Expression</th>
+        <th>Meaning</th>
+        <th class="th-systemd">systemd OnCalendar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>0 9 * * 1-5</code></td>
+        <td>Weekdays at 9am</td>
+        <td><code>Mon..Fri *-*-* 09:00:00</code></td>
+      </tr>
+      <tr>
+        <td><code>0 0 * * *</code></td>
+        <td>Daily at midnight</td>
+        <td><code>*-*-* 00:00:00</code></td>
+      </tr>
+      <tr>
+        <td><code>0 0 1 * *</code></td>
+        <td>1st day of each month</td>
+        <td><code>*-*-01 00:00:00</code></td>
+      </tr>
+      <tr>
+        <td><code>*/15 * * * *</code></td>
+        <td>Every 15 minutes</td>
+        <td><code>OnBootSec=15min</code> + <code>OnUnitActiveSec=15min</code></td>
+      </tr>
+      <tr>
+        <td><code>0 2 * * 0</code></td>
+        <td>Sundays at 2am</td>
+        <td><code>Sun *-*-* 02:00:00</code></td>
+      </tr>
+    </tbody>
+  </table>
+  <p>If you are translating many schedules, first verify the cron expression in <a href="https://cronbuilder.dev/cron/">the cron reference library</a>, then copy to systemd with explicit times and <code>Persistent=true</code> where missed runs matter.</p>
 
   <h2 id="logging">Logging: systemd Wins Decisively</h2>
 
@@ -402,6 +463,33 @@ systemctl status mybackup.timer
 
 <span class="comment"># List all active timers</span>
 systemctl list-timers</code></pre>
+
+  <h2 id="migration">Migration Playbook: Cron to systemd</h2>
+  <p>Use this workflow to migrate safely without missed jobs or duplicated runs:</p>
+  <h3>Step 1: Inventory your current cron entries</h3>
+  <pre><code><span class="comment"># Dump current user crontab</span>
+crontab -l
+
+<span class="comment"># If you also use system crontab</span>
+sudo cat /etc/crontab</code></pre>
+  <h3>Step 2: Convert one job at a time</h3>
+  <p>Start with a non-critical job, create the paired <code>.service</code> and <code>.timer</code>, and validate behavior in journald before moving to critical workloads.</p>
+  <h3>Step 3: Run both briefly, then cut over</h3>
+  <pre><code><span class="comment"># Enable timer and observe at least one successful run</span>
+sudo systemctl enable --now myjob.timer
+journalctl -u myjob.service -n 50
+
+<span class="comment"># Once confirmed, remove old cron line</span>
+crontab -e</code></pre>
+  <h3>Step 4: Add recovery/safety options</h3>
+  <pre><code>[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+RandomizedDelaySec=60
+AccuracySec=1min</code></pre>
+  <div class="callout green">
+    <p><strong>Migration rule of thumb:</strong> if a missed run would hurt your business, use <code>Persistent=true</code> and keep logs in journald. That one change usually justifies migration from cron.</p>
+  </div>
 
   <h2 id="verdict">When to Use Each</h2>
 

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">GitHub Actions cron scheduling flow</title>
+  <desc id="desc">Diagram showing cron expression, UTC evaluation, schedule trigger, and delayed run behavior in GitHub Actions.</desc>
+  <rect width="1200" height="630" fill="#0a0b0d"/>
+  <rect x="48" y="48" width="1104" height="534" rx="18" fill="#111318" stroke="#2d3550"/>
+  <text x="80" y="98" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="32" font-weight="700">GitHub Actions Scheduled Workflow</text>
+  <text x="80" y="132" fill="#7a8299" font-family="JetBrains Mono, monospace" font-size="18">UTC-only " 5-minute minimum " best-effort execution</text>
+
+  <rect x="80" y="184" width="250" height="108" rx="12" fill="#181c23" stroke="#2d3550"/>
+  <text x="102" y="220" fill="#89b4fa" font-family="JetBrains Mono, monospace" font-size="18">1) Workflow YAML</text>
+  <text x="102" y="252" fill="#f9e2af" font-family="JetBrains Mono, monospace" font-size="16">cron: '*/5 * * * *'</text>
+
+  <rect x="474" y="184" width="250" height="108" rx="12" fill="#181c23" stroke="#2d3550"/>
+  <text x="496" y="220" fill="#89b4fa" font-family="JetBrains Mono, monospace" font-size="18">2) Parsed in UTC</text>
+  <text x="496" y="252" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">No local timezone</text>
+
+  <rect x="868" y="184" width="250" height="108" rx="12" fill="#181c23" stroke="#2d3550"/>
+  <text x="890" y="220" fill="#89b4fa" font-family="JetBrains Mono, monospace" font-size="18">3) Trigger queued</text>
+  <text x="890" y="252" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">May run late under load</text>
+
+  <rect x="80" y="348" width="330" height="160" rx="12" fill="#141d2e" stroke="#2d3860"/>
+  <text x="104" y="386" fill="#94e2d5" font-family="JetBrains Mono, monospace" font-size="18">What to optimize for</text>
+  <text x="104" y="420" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Use UTC times explicitly</text>
+  <text x="104" y="448" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Avoid sub-5-minute assumptions</text>
+  <text x="104" y="476" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Add workflow_dispatch for testing</text>
+
+  <rect x="474" y="348" width="644" height="160" rx="12" fill="#0d1520" stroke="#2d3550"/>
+  <text x="498" y="386" fill="#a6e3a1" font-family="JetBrains Mono, monospace" font-size="18">Branch by schedule example</text>
+  <text x="498" y="420" fill="#f9e2af" font-family="JetBrains Mono, monospace" font-size="15">if [ "${{ github.event.schedule }}" = "*/5 * * * *" ]</text>
+  <text x="498" y="450" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="15">then run high-frequency task</text>
+  <text x="498" y="480" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="15">else run default path</text>
+
+  <path d="M330 238 H474" stroke="#94e2d5" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M724 238 H868" stroke="#94e2d5" stroke-width="4" marker-end="url(#arrow)"/>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94e2d5"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Cron debugging flow chart</title>
+  <desc id="desc">Step-by-step diagram for debugging cron jobs: validate syntax, check daemon status, inspect logs, test command as cron user, then verify PATH and permissions.</desc>
+  <rect width="1200" height="630" fill="#0a0b0d"/>
+  <rect x="48" y="48" width="1104" height="534" rx="18" fill="#111318" stroke="#2d3550"/>
+  <text x="80" y="100" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="32" font-weight="700">Cron job debugging flow (10-minute pass)</text>
+
+  <rect x="90" y="160" width="210" height="90" rx="10" fill="#181c23" stroke="#2d3550"/>
+  <text x="112" y="197" fill="#89b4fa" font-family="JetBrains Mono, monospace" font-size="16">1) Validate syntax</text>
+  <text x="112" y="224" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="14">cronbuilder.dev</text>
+
+  <rect x="340" y="160" width="220" height="90" rx="10" fill="#181c23" stroke="#2d3550"/>
+  <text x="362" y="197" fill="#89b4fa" font-family="JetBrains Mono, monospace" font-size="16">2) Check daemon</text>
+  <text x="362" y="224" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="14">systemctl status cron</text>
+
+  <rect x="600" y="160" width="220" height="90" rx="10" fill="#181c23" stroke="#2d3550"/>
+  <text x="622" y="197" fill="#89b4fa" font-family="JetBrains Mono, monospace" font-size="16">3) Check logs</text>
+  <text x="622" y="224" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="14">grep CRON /var/log/syslog</text>
+
+  <rect x="860" y="160" width="250" height="90" rx="10" fill="#181c23" stroke="#2d3550"/>
+  <text x="882" y="197" fill="#89b4fa" font-family="JetBrains Mono, monospace" font-size="16">4) Reproduce as user</text>
+  <text x="882" y="224" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="14">sudo -u user script.sh</text>
+
+  <rect x="190" y="330" width="350" height="180" rx="12" fill="#1e0d0f" stroke="#f38ba8" stroke-opacity="0.35"/>
+  <text x="216" y="372" fill="#f38ba8" font-family="JetBrains Mono, monospace" font-size="20" font-weight="700">If command not found</text>
+  <text x="216" y="406" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Set absolute binary paths</text>
+  <text x="216" y="434" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Export PATH in crontab</text>
+  <text x="216" y="462" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Check env diff</text>
+
+  <rect x="620" y="330" width="390" height="180" rx="12" fill="#0d1f11" stroke="#a6e3a1" stroke-opacity="0.35"/>
+  <text x="646" y="372" fill="#a6e3a1" font-family="JetBrains Mono, monospace" font-size="20" font-weight="700">If it runs but fails</text>
+  <text x="646" y="406" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Fix permissions / executable bit</text>
+  <text x="646" y="434" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Force working directory (cd)</text>
+  <text x="646" y="462" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="16">" Log stdout+stderr to file</text>
+
+  <path d="M300 205 H340" stroke="#94e2d5" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M560 205 H600" stroke="#94e2d5" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M820 205 H860" stroke="#94e2d5" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M930 250 V310 H815" stroke="#94e2d5" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <path d="M450 250 V310 H365" stroke="#94e2d5" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94e2d5"/>
+    </marker>
+  </defs>
+</svg>

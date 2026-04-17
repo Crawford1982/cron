@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">Cron vs systemd timers decision diagram</title>
+  <desc id="desc">Visual comparison showing when to choose cron versus systemd timers based on portability, logging, dependencies, and missed run recovery.</desc>
+  <rect width="1200" height="630" fill="#0a0b0d"/>
+  <rect x="48" y="48" width="1104" height="534" rx="18" fill="#111318" stroke="#2d3550"/>
+  <text x="80" y="100" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="32" font-weight="700">Cron vs systemd timers: quick decision map</text>
+
+  <rect x="80" y="160" width="500" height="370" rx="14" fill="#181c23" stroke="#2d3550"/>
+  <text x="108" y="202" fill="#f9e2af" font-family="JetBrains Mono, monospace" font-size="22" font-weight="700">Choose cron when:</text>
+  <text x="108" y="242" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="18">" You need cross-platform portability</text>
+  <text x="108" y="274" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="18">" Setup speed matters most</text>
+  <text x="108" y="306" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="18">" Jobs are simple and non-critical</text>
+  <text x="108" y="338" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="18">" Team familiarity is a priority</text>
+  <text x="108" y="384" fill="#7a8299" font-family="JetBrains Mono, monospace" font-size="16">Trade-off: weaker logging, no missed-run recovery</text>
+
+  <rect x="620" y="160" width="500" height="370" rx="14" fill="#141d2e" stroke="#2d3860"/>
+  <text x="648" y="202" fill="#94e2d5" font-family="JetBrains Mono, monospace" font-size="22" font-weight="700">Choose systemd timers when:</text>
+  <text x="648" y="242" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="18">" You need journald-native observability</text>
+  <text x="648" y="274" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="18">" Service dependencies matter</text>
+  <text x="648" y="306" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="18">" Missed runs must be recovered</text>
+  <text x="648" y="338" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="18">" You run production Linux workloads</text>
+  <text x="648" y="384" fill="#a6e3a1" font-family="JetBrains Mono, monospace" font-size="16">Hint: set Persistent=true for critical jobs</text>
+
+  <rect x="80" y="552" width="1040" height="46" rx="8" fill="#0d1520" stroke="#2d3550"/>
+  <text x="102" y="582" fill="#cdd6f4" font-family="JetBrains Mono, monospace" font-size="17">Rule of thumb: personal automation -> cron | production operations -> systemd timers</text>
+</svg>

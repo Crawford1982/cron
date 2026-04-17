@@ -23,7 +23,7 @@
   "author": { "@type": "Organization", "name": "CronBuilder.dev" },
   "publisher": { "@type": "Organization", "name": "CronBuilder.dev", "url": "https://cronbuilder.dev" },
   "datePublished": "2026-03-08",
-  "dateModified": "2026-03-30",
+  "dateModified": "2026-04-17",
   "mainEntityOfPage": "https://cronbuilder.dev/blog/cron-job-not-running.html"
 }
 </script>
@@ -130,6 +130,9 @@
   .toc ol { padding-left: 18px; }
   .toc li { margin-bottom: 5px; }
   .toc a { font-size: 0.87rem; color: var(--blue); text-decoration: none; }
+  .article-figure { margin: 20px 0 30px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .article-figure img { display: block; width: 100%; height: auto; }
+  .article-figure figcaption { font-size: 0.78rem; color: var(--muted); padding: 10px 14px; border-top: 1px solid var(--border); }
 
   .cta-box { background: linear-gradient(135deg, #151b2e, #1a2040); border: 1px solid #2d3860; border-radius: 12px; padding: 28px; text-align: center; margin: 48px 0; }
   .cta-box h3 { font-family: var(--font-ui); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
@@ -173,10 +176,18 @@
   <p>It's 9am. Your backup didn't run. No error. No log entry. No warning. Just silence. Silent cron failures are one of the most infuriating experiences in Linux administration — the job doesn't run, and cron tells you absolutely nothing about why.</p>
 
   <p>This guide covers all 10 causes, in order of likelihood, with the exact diagnostic commands and fixes for each. By the end you'll have a systematic process that solves 99% of cron failures in under 10 minutes.</p>
+  <figure class="article-figure">
+    <img src="/assets/img/cron-debugging-flow.svg" width="1200" height="630" alt="Cron troubleshooting flow chart from syntax validation to logs, PATH, and permissions checks">
+    <figcaption>Start with syntax + daemon status, then branch into PATH/runtime fixes based on what logs and manual runs show.</figcaption>
+  </figure>
 
   <div class="toc">
     <div class="toc-title">// jump to the most likely cause</div>
     <ol>
+      <li><a href="#quick-matrix">Quick diagnosis matrix</a></li>
+      <li><a href="#command-not-found">Cron command not found</a></li>
+      <li><a href="#not-executing">Cron not executing at all</a></li>
+      <li><a href="#job-not-working">Cron job not working after trigger</a></li>
       <li><a href="#r1">Wrong expression syntax</a></li>
       <li><a href="#r2">PATH is not your PATH</a></li>
       <li><a href="#r3">Script is not executable</a></li>
@@ -197,6 +208,60 @@
     <div class="diag-step"><div class="diag-n">3</div><div class="diag-text">Validate your expression: paste it into <a href="https://cronbuilder.dev">cronbuilder.dev</a> and check the next 10 run times</div></div>
     <div class="diag-step"><div class="diag-n">4</div><div class="diag-text">Run the command manually as the cron user: <code>sudo -u www-data /path/to/script.sh</code></div></div>
   </div>
+
+  <h2 id="quick-matrix">Quick Diagnosis Matrix (Symptom → Fix)</h2>
+  <p>If you're searching for "cron command not found", "cron not executing", or "cron job not working", use this table to jump straight to the likely cause and command-level fix.</p>
+  <pre><code>Symptom                            Most Likely Cause              First Command to Run
+------------------------------------------------------------------------------------------------
+cron command not found            cron daemon/package missing     systemctl status cron || systemctl status crond
+cron not executing                service stopped/disabled        sudo systemctl enable --now cron
+job runs manually, fails in cron  PATH/env mismatch               * * * * * env > /tmp/cron-env.log
+job triggers but no output        logs redirected/discarded       grep CRON /var/log/syslog | tail -30
+runs at wrong time                server timezone mismatch        timedatectl
+random failures/duplicates        overlapping executions          ps aux | grep script-name | grep -v grep</code></pre>
+  <div class="callout blue">
+    <p><strong>Sanity check first:</strong> validate your expression in <a href="https://cronbuilder.dev">CronBuilder</a> or use the reference pages for <a href="https://cronbuilder.dev/cron/every-minute/">every minute</a> and <a href="https://cronbuilder.dev/cron/every-5-minutes/">every 5 minutes</a> schedules.</p>
+  </div>
+
+  <h2 id="command-not-found">Fix: "cron command not found"</h2>
+  <p>This usually means cron is not installed, or you are on a distro where the service/binary name differs (<code>cron</code> vs <code>crond</code>).</p>
+  <pre><code><span class="comment"># Debian / Ubuntu</span>
+sudo apt-get update
+sudo apt-get install cron
+sudo systemctl enable --now cron
+
+<span class="comment"># RHEL / CentOS / Fedora</span>
+sudo dnf install cronie
+sudo systemctl enable --now crond
+
+<span class="comment"># Verify</span>
+systemctl status cron || systemctl status crond</code></pre>
+  <p>If the service exists but your script says a command is missing (like <code>python3</code> or <code>node</code>), jump to <a href="#r2">PATH Is Not Your PATH</a>.</p>
+
+  <h2 id="not-executing">Fix: "cron not executing"</h2>
+  <p>If jobs never appear in logs, the scheduler probably is not running, not enabled at boot, or your entry is in the wrong user's crontab.</p>
+  <pre><code><span class="comment"># Check scheduler status</span>
+systemctl status cron || systemctl status crond
+
+<span class="comment"># Ensure enabled + running</span>
+sudo systemctl enable --now cron || sudo systemctl enable --now crond
+
+<span class="comment"># Confirm job is in the right crontab</span>
+crontab -l
+sudo crontab -l</code></pre>
+  <p>Also confirm your schedule syntax on <a href="https://cronbuilder.dev">the builder</a> and compare with known working formats like <a href="https://cronbuilder.dev/cron/every-minute/">* * * * *</a>.</p>
+
+  <h2 id="job-not-working">Fix: "cron job not working" (but it triggers)</h2>
+  <p>If CRON logs show invocation but the task still fails, the issue is usually script runtime context: permissions, relative paths, missing env vars, or suppressed stderr.</p>
+  <pre><code><span class="comment"># Run as cron user to reproduce real context</span>
+sudo -u www-data /path/to/script.sh
+
+<span class="comment"># Capture full output while debugging</span>
+*/5 * * * * /path/to/script.sh >> /var/log/myjob.log 2>&1
+
+<span class="comment"># Compare cron env vs shell env</span>
+* * * * * env > /tmp/cron-env.txt</code></pre>
+  <p>Then walk through <a href="#r2">PATH</a>, <a href="#r5">relative paths</a>, and <a href="#r8">environment variables</a> sections below.</p>
 
   <!-- REASON 1 -->
   <div class="reason" id="r1">
@@ -508,7 +573,7 @@ chmod 755 /path/to/script.sh</code></pre>
        ps aux | grep script-name.sh | grep -v grep</code></pre>
 
   <div class="callout blue" style="margin-top: 40px;">
-    <p><strong>Related:</strong> <a href="cron-vs-systemd-timers.html">Cron vs systemd timers</a> — when to use each on Linux. <a href="github-actions-cron-schedule.html">GitHub Actions cron schedule</a> — gotchas and UTC.</p>
+    <p><strong>Related:</strong> <a href="cron-vs-systemd-timers.html">Cron vs systemd timers</a> — when to use each on Linux. <a href="github-actions-cron-schedule.html">GitHub Actions cron schedule</a> — gotchas and UTC. Need syntax checks? Start with <a href="https://cronbuilder.dev/cron/every-minute/">every minute</a> or <a href="https://cronbuilder.dev/cron/every-5-minutes/">every 5 minutes</a> references.</p>
   </div>
 
 </div>
