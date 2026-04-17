@@ -23,7 +23,7 @@
   "author": { "@type": "Organization", "name": "CronBuilder.dev" },
   "publisher": { "@type": "Organization", "name": "CronBuilder.dev", "url": "https://cronbuilder.dev" },
   "datePublished": "2026-03-08",
-  "dateModified": "2026-03-30",
+  "dateModified": "2026-04-17",
   "mainEntityOfPage": "https://cronbuilder.dev/blog/github-actions-cron-schedule.html"
 }
 </script>
@@ -164,7 +164,7 @@
   <div class="article-label">// github actions</div>
   <h1>GitHub Actions Cron Schedule:<br>UTC, 5-Min Limit & 3 More Gotchas</h1>
   <div class="article-meta">
-    <span>📅 March 2026</span>
+    <span>📅 Updated April 2026</span>
     <span>⏱ 8 min read</span>
     <span>🏷 GitHub Actions · CI/CD · Scheduling</span>
   </div>
@@ -259,7 +259,7 @@
     <div class="gotcha-header"><div class="gotcha-icon">🕐</div><div class="gotcha-title">All schedules run in UTC. There is no timezone setting.</div></div>
     <div class="gotcha-body">
       <p>Unlike Linux cron (which respects the server timezone and supports <code>CRON_TZ</code>), GitHub Actions has no timezone configuration for schedule triggers. The <code>cron:</code> value is <em>always</em> interpreted as UTC.</p>
-      <p>If you want a job to run at 9am London time (UTC+1 in winter, UTC+2 in summer), you need to write <code>'0 8 * * *'</code> in winter and update it to <code>'0 7 * * *'</code> when DST kicks in — or accept that the local time will drift by an hour twice a year.</p>
+      <p>If you want a job to run at 9am London time, remember London is UTC+0 in winter and UTC+1 in summer (BST). That means <code>'0 9 * * *'</code> in winter and <code>'0 8 * * *'</code> in summer — or accept that local wall-clock time drifts by an hour during DST changes.</p>
       <h3>Workaround: Handle timezone in the workflow step</h3>
       <pre><code><span class="key">steps:</span>
   - <span class="key">name:</span> <span class="val">Run only if it's 9am in London</span>
