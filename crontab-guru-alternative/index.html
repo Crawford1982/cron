@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crontab Guru Alternative With Timezone Preview | CronBuilder</title>
+<meta name="description" content="CronBuilder is a crontab.guru alternative for people who want plain-English explanations, timezone-aware run previews and copyable examples.">
+<link rel="canonical" href="https://cronbuilder.dev/crontab-guru-alternative/">
+<meta property="og:title" content="Crontab Guru Alternative With Timezone Preview | CronBuilder">
+<meta property="og:description" content="CronBuilder is a crontab.guru alternative for people who want plain-English explanations, timezone-aware run previews and copyable examples.">
+<meta property="og:url" content="https://cronbuilder.dev/crontab-guru-alternative/">
+<meta name="robots" content="index,follow">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5RNVMHRHLH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-5RNVMHRHLH');</script>
+<style>body{margin:0;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#0f172a;color:#e5edf7;line-height:1.65}main,header,footer{max-width:980px;margin:auto;padding:24px}.logo{color:#7dd3fc;font-weight:800;text-decoration:none}.hero{padding:54px 24px;background:radial-gradient(circle at 20% 0,#164e63,#0f172a 45%)}.eyebrow{color:#67e8f9;text-transform:uppercase;letter-spacing:.13em;font-size:13px;font-weight:800}h1{font-size:clamp(2.1rem,5vw,4rem);line-height:1.05;margin:12px 0}p.lead{max-width:760px;color:#cbd5e1;font-size:1.16rem}.expr{font-family:ui-monospace,Consolas,monospace;font-size:clamp(1.4rem,4vw,2.4rem);background:#020617;border:1px solid #334155;border-radius:12px;padding:20px;margin:22px 0;display:flex;justify-content:space-between;gap:16px;align-items:center}.copy{background:#22c55e;color:#052e16;border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.card{background:#111827;border:1px solid #334155;border-radius:10px;padding:18px}.code{white-space:pre-wrap;background:#020617;border:1px solid #334155;border-radius:10px;padding:18px;color:#bfdbfe}.links a{color:#7dd3fc;margin-right:14px}footer{color:#94a3b8;border-top:1px solid #334155}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Crontab Guru alternative with timezone preview","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://cronbuilder.dev/crontab-guru-alternative/"}</script>
+</head>
+<body>
+<header><a class="logo" href="/">CronBuilder.dev</a></header>
+<section class="hero"><main><div class="eyebrow">Cron generator</div><h1>Crontab Guru alternative with timezone preview</h1><p class="lead">CronBuilder is a crontab.guru alternative for people who want plain-English explanations, timezone-aware run previews and copyable examples.</p><div class="expr"><span id="expr">0 */6 * * *</span><button class="copy" onclick="navigator.clipboard.writeText('0 */6 * * *');gtag('event','copy_cron_expression',{page:'crontab-guru-alternative'})">Copy</button></div></main></section>
+<main>
+<section class="grid"><div class="card"><strong>Plain-English explanation.</strong><br>Paste or build an expression and see what each field means without digging through docs.</div><div class="card"><strong>Run previews.</strong><br>Check upcoming times before using a schedule for reports, deploys, emails, or syncs.</div><div class="card"><strong>Copyable examples.</strong><br>Start from common schedules, then adjust the expression in the full builder.</div></section>
+<h2>Why use CronBuilder as an alternative?</h2>
+<p>Crontab Guru is popular because it is fast and simple. CronBuilder is aimed at the next step: people who want the explanation, the examples, and a practical check before they paste the schedule into GitHub Actions, node-cron, Linux crontab, or a framework scheduler. The goal is not to make cron look clever. The goal is to stop small scheduling mistakes from turning into missed reports, duplicate emails, failed backups, or confusing support tickets.</p>
+<h2>Copy-ready example</h2><pre class="code">0 */6 * * *</pre>
+<h2>What this expression means</h2>
+<p><code>0 */6 * * *</code> runs at minute zero every six hours. On a server using UTC, that usually means 00:00, 06:00, 12:00, and 18:00 UTC. It is useful for recurring data imports, monitoring checks, analytics rollups, and other jobs where four times per day is enough. It is less suitable for anything that must run at a local business time unless you have checked the timezone carefully.</p>
+<h2>Common schedules to compare</h2>
+<pre class="code"># Every 5 minutes
+*/5 * * * *
+
+# Every hour
+0 * * * *
+
+# Every day at 09:00
+0 9 * * *
+
+# Every six hours
+0 */6 * * *</pre>
+<h2>When to be careful</h2>
+<p>Cron syntax looks compact, but the execution environment matters. GitHub Actions runs scheduled workflows in UTC. Linux crontab follows the server timezone. node-cron runs inside your application process. Quartz and Spring often add seconds and special day-field rules. If you are moving an expression between tools, use the specific generator page for that runtime rather than assuming the same string means the same thing everywhere.</p>
+<h2>How to test a schedule</h2>
+<p>Use the main builder to preview the next run times, copy the expression, and add a manual or one-off way to trigger the job. For important tasks, log the start and finish time, store the last successful run, and alert when the job misses its expected window. That is the difference between a cron expression that looks right and a scheduled process you can trust.</p>
+<h2>FAQ</h2>
+<p><strong>Is CronBuilder a replacement for documentation?</strong> It is a fast planning and checking tool. For production schedules, still check the rules for the runtime that will execute the job.</p>
+<p><strong>Why are there separate generator pages?</strong> Cron syntax changes between Linux, GitHub Actions, node-cron, and Quartz. Separate pages reduce copy-paste mistakes.</p>
+<p><strong>What should I check before saving a cron job?</strong> Confirm timezone, command environment, logging, retry behaviour, and whether duplicate runs can cause harm.</p>
+<h2>Use the full builder</h2><p>Open the <a href="/">Cron Expression Builder</a> to edit this schedule, explain a pasted expression, and preview upcoming run times.</p>
+<p class="links"><a href="/cron/every-5-minutes/">Every 5 minutes</a><a href="/cron/every-hour/">Every hour</a><a href="/blog/github-actions-cron-schedule.html">GitHub Actions guide</a><a href="/blog/cron-job-not-running.html">Cron not running?</a></p>
+</main><footer>Free cron expression tools, examples and scheduling guides.</footer>
+</body></html>

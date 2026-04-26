@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Node Cron Generator | node-cron Expression Builder</title>
+<meta name="description" content="Build node-cron expressions for JavaScript jobs. Preview the schedule, copy the expression, and understand which jobs need timezone handling.">
+<link rel="canonical" href="https://cronbuilder.dev/node-cron-generator/">
+<meta property="og:title" content="Node Cron Generator | node-cron Expression Builder">
+<meta property="og:description" content="Build node-cron expressions for JavaScript jobs. Preview the schedule, copy the expression, and understand which jobs need timezone handling.">
+<meta property="og:url" content="https://cronbuilder.dev/node-cron-generator/">
+<meta name="robots" content="index,follow">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5RNVMHRHLH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-5RNVMHRHLH');</script>
+<style>body{margin:0;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#0f172a;color:#e5edf7;line-height:1.65}main,header,footer{max-width:980px;margin:auto;padding:24px}.logo{color:#7dd3fc;font-weight:800;text-decoration:none}.hero{padding:54px 24px;background:radial-gradient(circle at 20% 0,#164e63,#0f172a 45%)}.eyebrow{color:#67e8f9;text-transform:uppercase;letter-spacing:.13em;font-size:13px;font-weight:800}h1{font-size:clamp(2.1rem,5vw,4rem);line-height:1.05;margin:12px 0}p.lead{max-width:760px;color:#cbd5e1;font-size:1.16rem}.expr{font-family:ui-monospace,Consolas,monospace;font-size:clamp(1.4rem,4vw,2.4rem);background:#020617;border:1px solid #334155;border-radius:12px;padding:20px;margin:22px 0;display:flex;justify-content:space-between;gap:16px;align-items:center}.copy{background:#22c55e;color:#052e16;border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.card{background:#111827;border:1px solid #334155;border-radius:10px;padding:18px}.code{white-space:pre-wrap;background:#020617;border:1px solid #334155;border-radius:10px;padding:18px;color:#bfdbfe}.links a{color:#7dd3fc;margin-right:14px}footer{color:#94a3b8;border-top:1px solid #334155}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Node cron generator","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://cronbuilder.dev/node-cron-generator/"}</script>
+</head>
+<body>
+<header><a class="logo" href="/">CronBuilder.dev</a></header>
+<section class="hero"><main><div class="eyebrow">Cron generator</div><h1>Node cron generator</h1><p class="lead">Build node-cron expressions for JavaScript jobs. Preview the schedule, copy the expression, and understand which jobs need timezone handling.</p><div class="expr"><span id="expr">*/15 * * * *</span><button class="copy" onclick="navigator.clipboard.writeText('*/15 * * * *');gtag('event','copy_cron_expression',{page:'node-cron-generator'})">Copy</button></div></main></section>
+<main>
+<section class="grid"><div class="card"><strong>node-cron uses familiar cron syntax.</strong><br>Most jobs use the five-field format: minute, hour, day of month, month, day of week.</div><div class="card"><strong>Timezone needs a decision.</strong><br>Set it explicitly for customer reminders, reports, billing, and other time-sensitive jobs.</div><div class="card"><strong>Your process must be alive.</strong><br>A cron expression cannot run if the Node process, container, or worker is stopped.</div></section>
+<h2>When this schedule fits</h2>
+<p>The expression <code>*/15 * * * *</code> runs every 15 minutes. It is sensible for lightweight polling, cache refreshes, queue cleanup, or a recurring sync that can tolerate small delays. It is not a good choice for heavyweight jobs unless you have locking, backoff, and monitoring in place. If the previous run can still be active when the next one starts, add a guard so you do not create overlapping work.</p>
+<h2>Copy-ready example</h2><pre class="code">import cron from 'node-cron';
+
+cron.schedule('*/15 * * * *', () =&gt; {
+  // run task
+}, {
+  timezone: 'Europe/London'
+});</pre>
+<h2>Common mistakes</h2>
+<p>The common failure is assuming node-cron behaves like a managed scheduler. It runs inside your app process, so deploys, crashes, autoscaling, and server restarts all matter. In multi-instance deployments, each instance may run the same schedule unless you use a leader, queue, lock, or external scheduler. For jobs that send money, emails, reminders, or destructive updates, write the task so it can be safely retried.</p>
+<h2>Useful node-cron patterns</h2>
+<pre class="code"># Every 15 minutes
+*/15 * * * *
+
+# Every day at 06:00
+0 6 * * *
+
+# Monday to Friday at 17:30
+30 17 * * 1-5</pre>
+<h2>How to test it</h2>
+<p>Paste the expression into the main builder and check the next run times. Then run the callback manually in a development script before relying on the schedule. Log the start, result, and duration of each run. For production systems, add an alert if the job has not completed within the expected window, because silent cron failures are usually discovered too late.</p>
+<h2>FAQ</h2>
+<p><strong>Does node-cron keep running after a deploy?</strong> Only if the process is running. Restarts, crashed workers, and scaled deployments all affect scheduled jobs.</p>
+<p><strong>Can multiple app instances run the same job?</strong> Yes. If your app runs on several instances, use locking, a queue, or a single scheduler process.</p>
+<p><strong>Should I set a timezone?</strong> Set one whenever the job is tied to a human expectation, such as local reports, reminders, invoices, or office-hours tasks.</p>
+<h2>Use the full builder</h2><p>Open the <a href="/">Cron Expression Builder</a> to edit this schedule, explain a pasted expression, and preview upcoming run times.</p>
+<p class="links"><a href="/cron/every-5-minutes/">Every 5 minutes</a><a href="/cron/every-hour/">Every hour</a><a href="/blog/github-actions-cron-schedule.html">GitHub Actions guide</a><a href="/blog/cron-job-not-running.html">Cron not running?</a></p>
+</main><footer>Free cron expression tools, examples and scheduling guides.</footer>
+</body></html>

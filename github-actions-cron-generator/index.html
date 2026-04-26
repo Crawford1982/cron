@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Actions Cron Generator | Schedule Workflow Runs</title>
+<meta name="description" content="Generate, explain and test GitHub Actions cron schedules. Copy the YAML schedule, preview UTC run times, and avoid the common timezone trap.">
+<link rel="canonical" href="https://cronbuilder.dev/github-actions-cron-generator/">
+<meta property="og:title" content="GitHub Actions Cron Generator | Schedule Workflow Runs">
+<meta property="og:description" content="Generate, explain and test GitHub Actions cron schedules. Copy the YAML schedule, preview UTC run times, and avoid the common timezone trap.">
+<meta property="og:url" content="https://cronbuilder.dev/github-actions-cron-generator/">
+<meta name="robots" content="index,follow">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5RNVMHRHLH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-5RNVMHRHLH');</script>
+<style>body{margin:0;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#0f172a;color:#e5edf7;line-height:1.65}main,header,footer{max-width:980px;margin:auto;padding:24px}.logo{color:#7dd3fc;font-weight:800;text-decoration:none}.hero{padding:54px 24px;background:radial-gradient(circle at 20% 0,#164e63,#0f172a 45%)}.eyebrow{color:#67e8f9;text-transform:uppercase;letter-spacing:.13em;font-size:13px;font-weight:800}h1{font-size:clamp(2.1rem,5vw,4rem);line-height:1.05;margin:12px 0}p.lead{max-width:760px;color:#cbd5e1;font-size:1.16rem}.expr{font-family:ui-monospace,Consolas,monospace;font-size:clamp(1.4rem,4vw,2.4rem);background:#020617;border:1px solid #334155;border-radius:12px;padding:20px;margin:22px 0;display:flex;justify-content:space-between;gap:16px;align-items:center}.copy{background:#22c55e;color:#052e16;border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.card{background:#111827;border:1px solid #334155;border-radius:10px;padding:18px}.code{white-space:pre-wrap;background:#020617;border:1px solid #334155;border-radius:10px;padding:18px;color:#bfdbfe}.links a{color:#7dd3fc;margin-right:14px}footer{color:#94a3b8;border-top:1px solid #334155}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"GitHub Actions cron generator","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://cronbuilder.dev/github-actions-cron-generator/"}</script>
+</head>
+<body>
+<header><a class="logo" href="/">CronBuilder.dev</a></header>
+<section class="hero"><main><div class="eyebrow">Cron generator</div><h1>GitHub Actions cron generator</h1><p class="lead">Generate, explain and test GitHub Actions cron schedules. Copy the YAML schedule, preview UTC run times, and avoid the common timezone trap.</p><div class="expr"><span id="expr">0 9 * * 1-5</span><button class="copy" onclick="navigator.clipboard.writeText('0 9 * * 1-5');gtag('event','copy_cron_expression',{page:'github-actions-cron-generator'})">Copy</button></div></main></section>
+<main>
+<section class="grid"><div class="card"><strong>GitHub Actions cron uses UTC.</strong><br>Write the schedule in UTC first, then translate it back to the time your team expects.</div><div class="card"><strong>Scheduled workflows are not instant.</strong><br>GitHub may queue runs at busy times, so avoid schedules that need second-perfect timing.</div><div class="card"><strong>Add manual fallback.</strong><br>Pair schedule with workflow_dispatch so you can rerun maintenance tasks without editing YAML.</div></section>
+<h2>When this schedule fits</h2>
+<p>The example above runs at 09:00 UTC Monday to Friday. It is a good fit for weekday report jobs, daily dependency checks, stale issue triage, or a build that should run before the team starts work. If your users or team are in the UK, remember that 09:00 UTC is 09:00 during GMT and 10:00 during BST. For anything customer-facing, put that conversion in the workflow name or a comment so the next person does not "fix" the schedule in the wrong direction.</p>
+<h2>Copy-ready example</h2><pre class="code">on:
+  schedule:
+    - cron: "0 9 * * 1-5"
+  workflow_dispatch:</pre>
+<h2>Common mistakes</h2>
+<p>The biggest mistake is treating GitHub Actions cron like local server cron. It is not local time, it does not support every cron extension, and it should not be used as the only trigger for urgent production work. Keep scheduled workflow commands idempotent, because failed jobs may be rerun manually. If the task sends emails, invoices, deploys, or mutates data, add a guard in the workflow or application code so a delayed rerun does not double-send.</p>
+<h2>Other useful GitHub Actions schedules</h2>
+<pre class="code"># Every weekday at 09:00 UTC
+0 9 * * 1-5
+
+# Nightly build at 02:30 UTC
+30 2 * * *
+
+# First day of the month at 08:00 UTC
+0 8 1 * *</pre>
+<h2>How to test it</h2>
+<p>Use the main builder to preview upcoming runs, commit the workflow with workflow_dispatch enabled, then run it once manually. Check that secrets, permissions, branch filters, and working directories behave the same way in the scheduled run as they do in a pull request or manual run. If the schedule controls a business process, add a short log line at the start and end of the workflow so failures are easier to diagnose later.</p>
+<h2>FAQ</h2>
+<p><strong>Does GitHub Actions cron use my local timezone?</strong> No. Scheduled workflows use UTC, so convert local business times before committing the workflow.</p>
+<p><strong>Can I run a workflow every minute?</strong> GitHub Actions scheduled workflows are not designed for minute-perfect polling. Use a more suitable scheduler if the timing is critical.</p>
+<p><strong>Should I keep workflow_dispatch?</strong> Yes for most maintenance jobs. It gives you a manual recovery path when a scheduled run fails or needs to be repeated.</p>
+<h2>Use the full builder</h2><p>Open the <a href="/">Cron Expression Builder</a> to edit this schedule, explain a pasted expression, and preview upcoming run times.</p>
+<p class="links"><a href="/cron/every-5-minutes/">Every 5 minutes</a><a href="/cron/every-hour/">Every hour</a><a href="/blog/github-actions-cron-schedule.html">GitHub Actions guide</a><a href="/blog/cron-job-not-running.html">Cron not running?</a></p>
+</main><footer>Free cron expression tools, examples and scheduling guides.</footer>
+</body></html>

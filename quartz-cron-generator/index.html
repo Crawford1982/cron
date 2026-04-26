@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quartz Cron Generator | Spring Scheduler Expression Helper</title>
+<meta name="description" content="Translate standard cron thinking into Quartz and Spring Scheduler expressions. Understand seconds, question marks, weekdays and month fields.">
+<link rel="canonical" href="https://cronbuilder.dev/quartz-cron-generator/">
+<meta property="og:title" content="Quartz Cron Generator | Spring Scheduler Expression Helper">
+<meta property="og:description" content="Translate standard cron thinking into Quartz and Spring Scheduler expressions. Understand seconds, question marks, weekdays and month fields.">
+<meta property="og:url" content="https://cronbuilder.dev/quartz-cron-generator/">
+<meta name="robots" content="index,follow">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5RNVMHRHLH"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-5RNVMHRHLH');</script>
+<style>body{margin:0;font-family:Inter,ui-sans-serif,system-ui,sans-serif;background:#0f172a;color:#e5edf7;line-height:1.65}main,header,footer{max-width:980px;margin:auto;padding:24px}.logo{color:#7dd3fc;font-weight:800;text-decoration:none}.hero{padding:54px 24px;background:radial-gradient(circle at 20% 0,#164e63,#0f172a 45%)}.eyebrow{color:#67e8f9;text-transform:uppercase;letter-spacing:.13em;font-size:13px;font-weight:800}h1{font-size:clamp(2.1rem,5vw,4rem);line-height:1.05;margin:12px 0}p.lead{max-width:760px;color:#cbd5e1;font-size:1.16rem}.expr{font-family:ui-monospace,Consolas,monospace;font-size:clamp(1.4rem,4vw,2.4rem);background:#020617;border:1px solid #334155;border-radius:12px;padding:20px;margin:22px 0;display:flex;justify-content:space-between;gap:16px;align-items:center}.copy{background:#22c55e;color:#052e16;border:0;border-radius:8px;padding:10px 14px;font-weight:800;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.card{background:#111827;border:1px solid #334155;border-radius:10px;padding:18px}.code{white-space:pre-wrap;background:#020617;border:1px solid #334155;border-radius:10px;padding:18px;color:#bfdbfe}.links a{color:#7dd3fc;margin-right:14px}footer{color:#94a3b8;border-top:1px solid #334155}</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Quartz cron generator","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://cronbuilder.dev/quartz-cron-generator/"}</script>
+</head>
+<body>
+<header><a class="logo" href="/">CronBuilder.dev</a></header>
+<section class="hero"><main><div class="eyebrow">Cron generator</div><h1>Quartz cron generator</h1><p class="lead">Translate standard cron thinking into Quartz and Spring Scheduler expressions. Understand seconds, question marks, weekdays and month fields.</p><div class="expr"><span id="expr">0 0 9 ? * MON-FRI</span><button class="copy" onclick="navigator.clipboard.writeText('0 0 9 ? * MON-FRI');gtag('event','copy_cron_expression',{page:'quartz-cron-generator'})">Copy</button></div></main></section>
+<main>
+<section class="grid"><div class="card"><strong>Quartz starts with seconds.</strong><br>That extra first field is why copied Unix cron expressions often fire at the wrong time.</div><div class="card"><strong>The question mark matters.</strong><br>Use <code>?</code> for "no specific value" in either day-of-month or day-of-week.</div><div class="card"><strong>Spring examples need checking.</strong><br>Confirm whether your framework expects six fields, seven fields, or a timezone attribute.</div></section>
+<h2>When this schedule fits</h2>
+<p>The example <code>0 0 9 ? * MON-FRI</code> runs at 09:00 every weekday in Quartz-style syntax. It is a solid schedule for business-hours reporting, daily imports, housekeeping tasks, or a Spring service that should run once per workday. It also shows the key Quartz difference: seconds come first, and the day-of-month field is deliberately set to <code>?</code> because the day-of-week field is doing the work.</p>
+<h2>Copy-ready example</h2><pre class="code">0 0 9 ? * MON-FRI</pre>
+<h2>Spring Scheduler example</h2>
+<pre class="code">@Scheduled(cron = "0 0 9 ? * MON-FRI", zone = "Europe/London")
+public void runWeekdayTask() {
+    // run task
+}</pre>
+<h2>Common mistakes</h2>
+<p>The main mistake is pasting a five-field Linux expression into a Quartz parser. <code>0 9 * * 1-5</code> means one thing in standard cron, but Quartz needs the seconds field and different handling for day fields. Another trap is mixing day-of-month and day-of-week too casually. When you want weekdays, use <code>?</code> for day-of-month. When you want the first day of each month, use <code>?</code> for day-of-week.</p>
+<h2>Useful Quartz patterns</h2>
+<pre class="code"># Weekdays at 09:00
+0 0 9 ? * MON-FRI
+
+# Every hour on the hour
+0 0 * ? * *
+
+# First day of each month at 08:30
+0 30 8 1 * ?</pre>
+<h2>How to test it</h2>
+<p>Preview the schedule before committing it, then test it in the same runtime that will execute the job. Quartz support varies slightly between libraries and framework wrappers, especially around optional year fields and timezone configuration. If the job matters, log the resolved timezone and the next expected run when the scheduler starts.</p>
+<h2>FAQ</h2>
+<p><strong>Why does Quartz cron have six fields?</strong> Quartz normally includes seconds as the first field, while standard Unix cron starts with minutes.</p>
+<p><strong>What does the question mark mean?</strong> It means no specific value. Use it in either day-of-month or day-of-week when the other field defines the schedule.</p>
+<p><strong>Can I use month and weekday names?</strong> Many Quartz implementations support names such as <code>MON-FRI</code>, but check the framework version you are deploying to.</p>
+<h2>Use the full builder</h2><p>Open the <a href="/">Cron Expression Builder</a> to edit this schedule, explain a pasted expression, and preview upcoming run times.</p>
+<p class="links"><a href="/cron/every-5-minutes/">Every 5 minutes</a><a href="/cron/every-hour/">Every hour</a><a href="/blog/github-actions-cron-schedule.html">GitHub Actions guide</a><a href="/blog/cron-job-not-running.html">Cron not running?</a></p>
+</main><footer>Free cron expression tools, examples and scheduling guides.</footer>
+</body></html>
