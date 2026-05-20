@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GitHub Actions Cron Schedule — UTC, 5-Min Limit & 3 More Gotchas</title>
-<meta name="description" content="GitHub Actions cron is UTC-only, enforces a 5-minute minimum, and delays up to 30 min. All 5 gotchas with tested YAML workarounds you can copy-paste.">
+<title>GitHub Actions Cron Schedule — Syntax, UTC, 5-Min Limit & Examples</title>
+<meta name="description" content="GitHub Actions cron schedule guide: YAML syntax, UTC timezone rules, 5-minute minimum interval, delay gotchas and copy-paste examples for scheduled workflows.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://cronbuilder.dev/blog/github-actions-cron-schedule.html">
 <link rel="icon" href="/favicon.ico" sizes="any">
@@ -170,6 +170,10 @@
   </div>
 
   <p>GitHub Actions makes it easy to schedule automated workflows — but it comes with a handful of sharp edges that catch almost every developer at least once. This guide covers everything from basic syntax to the 5 gotchas that explain why your scheduled workflow isn't running when you expect it to.</p>
+
+  <div class="callout">
+    <strong>Quick answer:</strong> GitHub Actions scheduled workflows use <code>on.schedule</code> with standard 5-field cron syntax, always evaluated in UTC. The minimum interval is 5 minutes, and runs can be delayed at busy times, so schedule important jobs away from the top of the hour.
+  </div>
   <figure class="article-figure">
     <img src="/assets/img/github-actions-cron-flow.svg" width="1200" height="630" alt="GitHub Actions cron flow showing schedule trigger, UTC evaluation, and delayed run behavior">
     <figcaption>GitHub scheduled workflows: cron trigger -> UTC evaluation -> queued run (often delayed at peak load).</figcaption>
